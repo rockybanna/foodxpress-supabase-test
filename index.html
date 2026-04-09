@@ -542,6 +542,9 @@ text-align:center;
 </div>
 
 <script>
+  const SUPABASE_URL = "https://nhjglpjekexgldahkpjv.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5oamdscGpla2V4Z2xkYWhrcGp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3MzYwNDksImV4cCI6MjA5MTMxMjA0OX0.mKvmkiWhxFdgE_u1_rJ2MD06EQ7VnFnZ2_4eU1MCGAU";
+
 /* ================= DATA ================= */
 let restaurants=[],categories=[],items=[];
 let ALL_RESTAURANTS = [];
@@ -581,37 +584,56 @@ grandTotal = document.getElementById("grandTotal");
 savingHintMenu = document.getElementById("savingHintMenu");
 savingHintSummary = document.getElementById("savingHintSummary");
 
+  loadData();
+orderId = getOrderId();
 
-  /* ---------- FETCH DATA AFTER DOM READY ---------- */
-  fetch("https://script.google.com/macros/s/AKfycbw66W91wIe-cAXwIZPgfEGJ1gy4TQ_MQ5WANbm3jQ9g4t_OmKNgqD7K8-pq7njoteWwEg/exec")
-    .then(r => r.json())
-    .then(d => {
+  async function loadData(){
 
-restaurants = d.restaurants.map(r => ({
-  id: r.RestaurantID,
-  name: r.RestaurantName,
-  logo: `images/restaurants/${r.RestaurantID}.jpg`,
-  lat: Number(r.Latitude),
-  lng: Number(r.Longitude),
-  slots: [
-    [r.Slot1_Open, r.Slot1_Close],
-    [r.Slot2_Open, r.Slot2_Close]
-  ]
-  .filter(x => x[0] && x[1])
-  .map(x => [toTime(x[0]), toTime(x[1])])
-}));
+  const headers = {
+    apikey: SUPABASE_KEY,
+    Authorization: `Bearer ${SUPABASE_KEY}`
+  };
 
-      ALL_RESTAURANTS = [...restaurants];
-      categories = d.categories || [];
-      items = d.items || [];
+  const [r1, r2, r3] = await Promise.all([
+    fetch(`${SUPABASE_URL}/rest/v1/restaurants`, { headers }),
+    fetch(`${SUPABASE_URL}/rest/v1/categories`, { headers }),
+    fetch(`${SUPABASE_URL}/rest/v1/items`, { headers })
+  ]);
 
-      renderRestaurants();
-    })
-    .catch(() => alert("Unable to connect"));
-  orderId = getOrderId();
+  const restaurantsData = await r1.json();
+  const categoriesData = await r2.json();
+  const itemsData = await r3.json();
 
-});
+  restaurants = restaurantsData.map(r => ({
+    id: r.id,
+    name: r.name,
+    logo: r.image || "company-logo.png",
+    lat: Number(r.lat),
+    lng: Number(r.lng),
+    slots: [[r.open_time, r.close_time]]
+  }));
 
+  ALL_RESTAURANTS = [...restaurants];
+
+  categories = categoriesData.map(c => ({
+    CategoryID: c.id,
+    RestaurantID: c.restaurant_id,
+    CategoryName: c.name,
+    SortOrder: c.sort_order,
+    IsActive: c.is_active
+  }));
+
+  items = itemsData.map(i => ({
+    RestaurantID: i.restaurant_id,
+    CategoryID: i.category_id,
+    ItemName: i.name,
+    ItemDescription: i.description,
+    Price: i.price,
+    IsAvailable: i.is_available
+  }));
+
+  renderRestaurants();
+}
 
   /* ================= ORDER ID ================= */
 function getOrderId(){
