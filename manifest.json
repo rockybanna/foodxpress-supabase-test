@@ -1,8 +1,8 @@
 {
   "name": "20nagar Food Xpress",
   "short_name": "Food Xpress",
-  "start_url": "/foodxpress-order/index.html",
-  "scope": "/foodxpress-order/",
+  "start_url": "/./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#7a4b6d",
