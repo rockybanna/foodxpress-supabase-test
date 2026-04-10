@@ -2,40 +2,21 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Admin Panel - FoodXpress</title>
+<title>Admin Panel Pro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 body{font-family:Arial;margin:0;background:#f5f5f5}
 .header{background:#e53935;color:#fff;padding:14px;text-align:center;font-weight:800}
-.container{padding:14px}
-.card{background:#fff;padding:12px;margin-bottom:10px;border-radius:10px}
+.container{padding:12px}
+.card{background:#fff;padding:12px;margin-bottom:10px;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,0.08)}
 
-input,select{
-  width:100%;
-  padding:10px;
-  margin:6px 0;
-  border-radius:8px;
-  border:1px solid #ccc
-}
-
-button{
-  padding:12px;
-  border:none;
-  border-radius:10px;
-  background:#e53935;
-  color:#fff;
-  font-weight:700;
-  margin-top:6px;
-  width:100%
-}
-
-.small-btn{
-  width:auto;
-  padding:6px 10px;
-  font-size:12px;
-  border-radius:8px;
-}
+.row{display:flex;justify-content:space-between;align-items:center}
+.btn{padding:6px 10px;border-radius:8px;border:none;color:#fff;font-size:12px}
+.green{background:#2e7d32}
+.red{background:#c62828}
+.blue{background:#1976d2}
+.orange{background:#f57c00}
 </style>
 </head>
 
@@ -43,218 +24,189 @@ button{
 
 <div class="header">Admin Panel</div>
 
-<div id="loginPage" class="container">
-  <input id="pass" type="password" placeholder="Enter Password">
-  <button onclick="login()">Login</button>
+<div id="login" class="container">
+<input id="pass" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
 </div>
 
-<div id="app" class="container" style="display:none">
+<div id="app" style="display:none">
 
-<h3>Add Restaurant</h3>
-<div class="card">
-  <input id="newRest" placeholder="Restaurant Name">
-  <button onclick="addRestaurant()">Add Restaurant</button>
-</div>
-
-<h3>Add Category</h3>
-<div class="card">
-  <select id="catRest"></select>
-  <input id="newCat" placeholder="Category Name">
-  <button onclick="addCategory()">Add Category</button>
-</div>
-
-<h3>Add Item</h3>
-<div class="card">
-  <select id="rest"></select>
-  <select id="cat"></select>
-  <input id="name" placeholder="Item Name">
-  <input id="price" placeholder="Price">
-  <button onclick="addItem()">Add Item</button>
-</div>
-
-<h3>Items</h3>
-
-<input id="search" placeholder="🔍 Search..." oninput="renderItems()">
-
-<select id="filterCat" onchange="renderItems()"></select>
-
-<div id="list"></div>
+<div class="container" id="screen1"></div>
+<div class="container" id="screen2" style="display:none"></div>
+<div class="container" id="screen3" style="display:none"></div>
 
 </div>
 
 <script>
-const PASS = "1234";
-
-const URL = "https://nhjglpjekexgldahkpjv.supabase.co";
-const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5oamdscGpla2V4Z2xkYWhrcGp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3MzYwNDksImV4cCI6MjA5MTMxMjA0OX0.mKvmkiWhxFdgE_u1_rJ2MD06EQ7VnFnZ2_4eU1MCGAU";
+const PASS="1234";
+const URL="https://nhjglpjekexgldahkpjv.supabase.co";
+const KEY="YOUR_ANON_KEY";
 
 let restaurants=[],categories=[],items=[];
+let currentRestaurant=null;
+let currentCategory=null;
 
 function login(){
-  if(document.getElementById("pass").value === PASS){
-    loginPage.style.display="none";
-    app.style.display="block";
-    loadData();
-  } else alert("Wrong password");
+ if(pass.value===PASS){
+  login.style.display="none";
+  app.style.display="block";
+  loadData();
+ } else alert("Wrong password");
 }
 
 async function loadData(){
-  const headers = {apikey:KEY,Authorization:`Bearer ${KEY}`};
+ const h={apikey:KEY,Authorization:`Bearer ${KEY}`};
 
-  restaurants = await (await fetch(URL+"/rest/v1/restaurants",{headers})).json();
-  categories  = await (await fetch(URL+"/rest/v1/categories",{headers})).json();
-  items       = await (await fetch(URL+"/rest/v1/items",{headers})).json();
+ restaurants=await (await fetch(URL+"/rest/v1/restaurants",{headers:h})).json();
+ categories=await (await fetch(URL+"/rest/v1/categories",{headers:h})).json();
+ items=await (await fetch(URL+"/rest/v1/items",{headers:h})).json();
 
-  renderDropdowns();
-  renderItems();
+ renderRestaurants();
 }
 
-function renderDropdowns(){
-  rest.innerHTML = restaurants.map(x=>`<option value="${x.id}">${x.name}</option>`).join("");
-  catRest.innerHTML = rest.innerHTML;
+/* ================= RESTAURANTS ================= */
 
-  updateCats();
-  loadFilterCategories();
+function renderRestaurants(){
+ screen1.innerHTML="<h3>Restaurants</h3>";
+
+ restaurants.forEach(r=>{
+  screen1.innerHTML+=`
+  <div class="card">
+    <div class="row">
+      <b onclick="openRestaurant(${r.id})">${r.name}</b>
+      <button class="btn ${r.is_active?'green':'red'}"
+        onclick="toggleRestaurant(${r.id},${r.is_active})">
+        ${r.is_active?'ON':'OFF'}
+      </button>
+    </div>
+  </div>`;
+ });
 }
 
-function updateCats(){
-  const rid = rest.value;
-  cat.innerHTML = categories
-    .filter(x=>x.restaurant_id==rid)
-    .map(x=>`<option value="${x.id}">${x.name}</option>`)
-    .join("");
+async function toggleRestaurant(id,val){
+ await fetch(URL+"/rest/v1/restaurants?id=eq."+id,{
+  method:"PATCH",
+  headers:{apikey:KEY,Authorization:`Bearer ${KEY}`,"Content-Type":"application/json"},
+  body:JSON.stringify({is_active:!val})
+ });
+ loadData();
 }
 
-function loadFilterCategories(){
-  const rid = rest.value;
-  filterCat.innerHTML = `<option value="">All Categories</option>` +
-    categories
-    .filter(x=>x.restaurant_id==rid)
-    .map(x=>`<option value="${x.id}">${x.name}</option>`)
-    .join("");
+function openRestaurant(id){
+ currentRestaurant=id;
+ screen1.style.display="none";
+ screen2.style.display="block";
+ renderCategories();
 }
 
-async function addRestaurant(){
-  const name = newRest.value.trim();
-  if(!name) return alert("Enter name");
+/* ================= CATEGORIES ================= */
 
-  await fetch(URL+"/rest/v1/restaurants",{
-    method:"POST",
-    headers:{apikey:KEY,Authorization:`Bearer ${KEY}`,"Content-Type":"application/json"},
-    body:JSON.stringify({name,is_active:true})
-  });
+function renderCategories(){
+ const list=categories.filter(c=>c.restaurant_id==currentRestaurant);
 
-  loadData();
+ screen2.innerHTML=`<button onclick="back1()">⬅ Back</button><h3>Categories</h3>`;
+
+ list.forEach(c=>{
+  screen2.innerHTML+=`
+  <div class="card">
+    <div class="row">
+      <b onclick="openCategory(${c.id})">${c.name}</b>
+      <button class="btn ${c.is_active?'green':'red'}"
+        onclick="toggleCategory(${c.id},${c.is_active})">
+        ${c.is_active?'ON':'OFF'}
+      </button>
+    </div>
+  </div>`;
+ });
 }
 
-async function addCategory(){
-  const name = newCat.value.trim();
-  if(!name) return alert("Enter name");
-
-  await fetch(URL+"/rest/v1/categories",{
-    method:"POST",
-    headers:{apikey:KEY,Authorization:`Bearer ${KEY}`,"Content-Type":"application/json"},
-    body:JSON.stringify({name,restaurant_id:catRest.value,is_active:true})
-  });
-
-  loadData();
+async function toggleCategory(id,val){
+ await fetch(URL+"/rest/v1/categories?id=eq."+id,{
+  method:"PATCH",
+  headers:{apikey:KEY,Authorization:`Bearer ${KEY}`,"Content-Type":"application/json"},
+  body:JSON.stringify({is_active:!val})
+ });
+ loadData();
 }
 
-async function addItem(){
-  const name = nameInput.value.trim();
-  const price = priceInput.value.trim();
-
-  if(!name) return alert("Enter item name");
-  if(!price || isNaN(price)) return alert("Enter valid price");
-
-  await fetch(URL+"/rest/v1/items",{
-    method:"POST",
-    headers:{apikey:KEY,Authorization:`Bearer ${KEY}`,"Content-Type":"application/json"},
-    body:JSON.stringify({
-      restaurant_id:rest.value,
-      category_id:cat.value,
-      name,
-      price:Number(price),
-      is_available:true
-    })
-  });
-
-  loadData();
+function openCategory(id){
+ currentCategory=id;
+ screen2.style.display="none";
+ screen3.style.display="block";
+ renderItems();
 }
+
+function back1(){
+ screen2.style.display="none";
+ screen1.style.display="block";
+}
+
+/* ================= ITEMS ================= */
 
 function renderItems(){
-  const rid = rest.value;
-  const searchVal = search.value.toLowerCase();
-  const catVal = filterCat.value;
+ const list=items.filter(i=>i.category_id==currentCategory);
 
-  list.innerHTML="";
+ screen3.innerHTML=`<button onclick="back2()">⬅ Back</button><h3>Items</h3>`;
 
-  items
-    .filter(i=>i.restaurant_id==rid)
-    .filter(i=>!catVal || i.category_id==catVal)
-    .filter(i=>i.name.toLowerCase().includes(searchVal))
-    .forEach(i=>{
-      list.innerHTML += `
-      <div style="
-        background:#fff;
-        border-radius:14px;
-        padding:14px;
-        margin-bottom:10px;
-        box-shadow:0 2px 6px rgba(0,0,0,0.08);
-        border-left:5px solid ${i.is_available ? '#4caf50':'#c62828'};
-      ">
-        <div style="display:flex;justify-content:space-between;">
-          <b>${i.name}</b>
-          <b style="color:#e53935">₹${i.price}</b>
-        </div>
-
-        <div style="margin-top:10px;display:flex;gap:6px;">
-          <button class="small-btn" onclick="editItem(${i.id},'${i.name}',${i.price})" style="background:#1976d2">Edit</button>
-          <button class="small-btn" onclick="toggleItem(${i.id},${i.is_available})" style="background:#f57c00">
-            ${i.is_available?'Disable':'Enable'}
-          </button>
-          <button class="small-btn" onclick="del(${i.id})" style="background:#c62828">Delete</button>
-        </div>
-      </div>`;
-    });
+ list.forEach(i=>{
+  screen3.innerHTML+=`
+  <div class="card">
+    <div class="row">
+      <div>
+        <b>${i.name}</b><br>
+        ₹${i.price}
+      </div>
+      <div>
+        <button class="btn ${i.is_available?'green':'red'}"
+          onclick="toggleItem(${i.id},${i.is_available})">
+          ${i.is_available?'ON':'OFF'}
+        </button>
+        <button class="btn blue"
+          onclick="editItem(${i.id},'${i.name}',${i.price},'${i.image_url||''}')">
+          Edit
+        </button>
+      </div>
+    </div>
+  </div>`;
+ });
 }
 
-async function editItem(id,n,p){
-  const name = prompt("Name",n);
-  const price = prompt("Price",p);
-  if(!name||!price) return;
-
-  await fetch(URL+"/rest/v1/items?id=eq."+id,{
-    method:"PATCH",
-    headers:{apikey:KEY,Authorization:`Bearer ${KEY}`,"Content-Type":"application/json"},
-    body:JSON.stringify({name,price})
-  });
-
-  loadData();
+async function toggleItem(id,val){
+ await fetch(URL+"/rest/v1/items?id=eq."+id,{
+  method:"PATCH",
+  headers:{apikey:KEY,Authorization:`Bearer ${KEY}`,"Content-Type":"application/json"},
+  body:JSON.stringify({is_available:!val})
+ });
+ loadData();
 }
 
-async function toggleItem(id,c){
-  await fetch(URL+"/rest/v1/items?id=eq."+id,{
-    method:"PATCH",
-    headers:{apikey:KEY,Authorization:`Bearer ${KEY}`,"Content-Type":"application/json"},
-    body:JSON.stringify({is_available:!c})
-  });
-  loadData();
+async function editItem(id,n,p,img){
+
+ const name=prompt("Name",n);
+ if(!name) return;
+
+ const price=prompt("Price",p);
+ if(!price || price<=0) return alert("Invalid price");
+
+ const image=prompt("Image URL",img||"");
+
+ await fetch(URL+"/rest/v1/items?id=eq."+id,{
+  method:"PATCH",
+  headers:{apikey:KEY,Authorization:`Bearer ${KEY}`,"Content-Type":"application/json"},
+  body:JSON.stringify({
+    name:name,
+    price:Number(price),
+    image_url:image
+  })
+ });
+
+ loadData();
 }
 
-async function del(id){
-  await fetch(URL+"/rest/v1/items?id=eq."+id,{
-    method:"DELETE",
-    headers:{apikey:KEY,Authorization:`Bearer ${KEY}`}
-  });
-  loadData();
+function back2(){
+ screen3.style.display="none";
+ screen2.style.display="block";
 }
-
-rest.onchange=()=>{
-  updateCats();
-  loadFilterCategories();
-  renderItems();
-};
 </script>
 
 </body>
