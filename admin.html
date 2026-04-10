@@ -175,21 +175,35 @@ function renderItems(){
   screen3.innerHTML+=`
   <div class="card">
     <div class="row">
-      <div>
-        <b>${i.name}</b><br>
-        ₹${i.price}
-      </div>
-      <div>
-        <button class="btn ${i.is_available?'green':'red'}"
-          onclick="toggleItem(${i.id},${i.is_available})">
-          ${i.is_available?'ON':'OFF'}
-        </button>
-        <button class="btn blue"
-          onclick="editItem(${i.id},'${i.name}',${i.price},'${i.image_url||''}')">
-          Edit
-        </button>
-      </div>
-    </div>
+  <div>
+
+    ${i.image_url ? `
+      <img src="${i.image_url}" 
+      style="width:60px;height:60px;border-radius:8px;margin-bottom:5px;">
+    ` : ""}
+
+    <b>${i.name}</b><br>
+    ₹${i.price}
+
+    <br><br>
+
+    <input type="file" accept="image/*" 
+      onchange="uploadImage(${i.id}, this.files[0])">
+
+  </div>
+
+  <div>
+    <button class="btn ${i.is_available?'green':'red'}"
+      onclick="toggleItem(${i.id},${i.is_available})">
+      ${i.is_available?'ON':'OFF'}
+    </button>
+
+    <button class="btn blue"
+      onclick="editItem(${i.id},'${i.name}',${i.price},'${i.image_url||''}')">
+      Edit
+    </button>
+  </div>
+</div>
   </div>`;
  });
 }
@@ -244,6 +258,53 @@ function back2(){
  screen2.style.display="block";
  currentView = "categories";
 }
+
+ async function uploadImage(itemId, file){
+
+ if(!file){
+  alert("No file selected");
+  return;
+ }
+
+ const fileName = Date.now() + "_" + file.name;
+
+ const res = await fetch(
+  URL + "/storage/v1/object/item-images/" + fileName,
+  {
+    method: "POST",
+    headers: {
+      apikey: KEY,
+      Authorization: `Bearer ${KEY}`,
+      "Content-Type": file.type
+    },
+    body: file
+  }
+ );
+
+ if(!res.ok){
+  alert("Upload failed");
+  return;
+ }
+
+ const publicUrl = URL + "/storage/v1/object/public/item-images/" + fileName;
+
+ await fetch(URL+"/rest/v1/items?id=eq."+itemId,{
+  method:"PATCH",
+  headers:{
+    apikey:KEY,
+    Authorization:`Bearer ${KEY}`,
+    "Content-Type":"application/json",
+    "Prefer":"return=minimal"
+  },
+  body:JSON.stringify({
+    image_url: publicUrl
+  })
+ });
+
+ alert("Image uploaded");
+ await loadData();
+}
+ 
 </script>
 
 </body>
