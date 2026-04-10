@@ -36,10 +36,13 @@ button{padding:10px;border:none;border-radius:8px;background:#e53935;color:#fff;
     <button onclick="addItem()">Add Item</button>
   </div>
 
-  <h3>Items</h3>
-  <div id="list"></div>
+<h3>Items</h3>
 
-</div>
+<input id="search" placeholder="Search item..." oninput="renderItems()">
+
+<select id="filterCat" onchange="renderItems()"></select>
+
+<div id="list"></div>
 
 <script>
 const PASS = "1234";
@@ -80,8 +83,9 @@ function renderDropdowns(){
   r.innerHTML = restaurants.map(x=>`<option value="${x.id}">${x.name}</option>`).join("");
 
   updateCats();
+  loadFilterCategories();
 }
-
+  
 function updateCats(){
   const rid = document.getElementById("rest").value;
   const c = document.getElementById("cat");
@@ -91,7 +95,19 @@ function updateCats(){
     .map(x=>`<option value="${x.id}">${x.name}</option>`)
     .join("");
 }
+  
+  function loadFilterCategories(){
+  const rid = document.getElementById("rest").value;
+  const fc = document.getElementById("filterCat");
 
+  fc.innerHTML = `
+    <option value="">All Categories</option>
+  ` + categories
+    .filter(x=>x.restaurant_id == rid)
+    .map(x=>`<option value="${x.id}">${x.name}</option>`)
+    .join("");
+}
+  
 async function addItem(){
   const name = document.getElementById("name").value;
   const price = document.getElementById("price").value;
@@ -122,11 +138,15 @@ function renderItems(){
 
   const box = document.getElementById("list");
   const rid = document.getElementById("rest").value;
+  const search = document.getElementById("search").value.toLowerCase();
+  const cat = document.getElementById("filterCat").value;
 
   box.innerHTML = "";
 
   items
     .filter(i => i.restaurant_id == rid)
+    .filter(i => !cat || i.category_id == cat)
+    .filter(i => i.name.toLowerCase().includes(search))
     .forEach(i => {
 
       box.innerHTML += `
@@ -145,7 +165,7 @@ function renderItems(){
       `;
     });
 }
-
+  
   async function editItem(id, oldName, oldPrice){
 
   const name = prompt("Edit name", oldName);
@@ -187,11 +207,11 @@ function renderItems(){
   loadData();
 }
 
-  document.getElementById("rest").onchange = () => {
+document.getElementById("rest").onchange = () => {
   updateCats();
+  loadFilterCategories();
   renderItems();
 };
-
   
 async function del(id){
   await fetch(URL+"/rest/v1/items?id=eq."+id,{
