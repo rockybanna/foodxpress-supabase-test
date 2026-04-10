@@ -92,8 +92,6 @@ function updateCats(){
     .join("");
 }
 
-document.getElementById("rest").onchange = updateCats;
-
 async function addItem(){
   const name = document.getElementById("name").value;
   const price = document.getElementById("price").value;
@@ -121,34 +119,6 @@ async function addItem(){
 }
 
 function renderItems(){
-
-  const box = document.getElementById("list");
-  const rid = document.getElementById("rest").value;
-
-  box.innerHTML = "";
-
-  items
-    .filter(i => i.restaurant_id == rid)
-    .forEach(i => {
-
-      box.innerHTML += `
-        <div class="card">
-          <b>${i.name}</b><br>
-          ₹${i.price}
-
-          <div style="margin-top:6px;">
-            <button class="small-btn" onclick="editItem(${i.id}, '${i.name}', ${i.price})">Edit</button>
-            <button class="small-btn" onclick="toggleItem(${i.id}, ${i.is_available})">
-              ${i.is_available ? 'Disable' : 'Enable'}
-            </button>
-            <button class="small-btn" onclick="del(${i.id})">Delete</button>
-          </div>
-        </div>
-      `;
-    });
-}
-
-  function renderItems(){
 
   const box = document.getElementById("list");
   const rid = document.getElementById("rest").value;
