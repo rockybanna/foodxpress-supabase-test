@@ -59,12 +59,18 @@ async function loadData(){
  const h={apikey:KEY,Authorization:`Bearer ${KEY}`};
 
  restaurants=await (await fetch(URL+"/rest/v1/restaurants",{headers:h})).json();
- categories=await (await fetch(URL+"/rest/v1/categories",{headers:h})).json();
-items = await (await fetch(
-  URL + "/rest/v1/items?order=id.asc",
+ 
+categories = await (await fetch(
+  URL + "/rest/v1/categories?order=sort_order.asc",
   {headers:h}
 )).json();
-if(currentView==="restaurants"){
+ 
+ items = await (await fetch(
+  URL + "/rest/v1/items?order=sort_order.asc",
+  {headers:h}
+)).json();
+ 
+ if(currentView==="restaurants"){
   renderRestaurants();
 }
 else if(currentView==="categories"){
