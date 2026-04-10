@@ -60,8 +60,10 @@ async function loadData(){
 
  restaurants=await (await fetch(URL+"/rest/v1/restaurants",{headers:h})).json();
  categories=await (await fetch(URL+"/rest/v1/categories",{headers:h})).json();
- items=await (await fetch(URL+"/rest/v1/items",{headers:h})).json();
-
+items = await (await fetch(
+  URL + "/rest/v1/items?order=id.asc",
+  {headers:h}
+)).json();
 if(currentView==="restaurants"){
   renderRestaurants();
 }
@@ -104,7 +106,10 @@ headers:{
 },
   body:JSON.stringify({is_active:!val})
  });
- await loadData();
+await loadData();
+if(currentView==="restaurants") renderRestaurants();
+if(currentView==="categories") renderCategories();
+if(currentView==="items") renderItems();
 }
 
 function openRestaurant(id){
@@ -147,7 +152,10 @@ headers:{
 },
   body:JSON.stringify({is_active:!val})
  });
- await loadData();
+await loadData();
+if(currentView==="restaurants") renderRestaurants();
+if(currentView==="categories") renderCategories();
+if(currentView==="items") renderItems();
 }
 
 function openCategory(id){
@@ -167,66 +175,58 @@ function back1(){
 /* ================= ITEMS ================= */
 
 function renderItems(){
- const list=items.filter(i=>i.category_id==currentCategory);
+ const list = items.filter(i => i.category_id == currentCategory);
 
- screen3.innerHTML=`<button onclick="back2()">⬅ Back</button><h3>Items</h3>`;
+ screen3.innerHTML = `<button onclick="back2()">⬅ Back</button><h3>Items</h3>`;
 
  list.forEach(i=>{
-  screen3.innerHTML+=`
+  screen3.innerHTML += `
   <div class="card">
     <div class="row">
-  <div>
 
-<div>
+      <div>
 
-  ${i.image_url ? `
-    <div style="margin-bottom:6px;">
-      
-      <img src="${i.image_url}" 
-      style="
-        width:70px;
-        height:70px;
-        object-fit:cover;
-        border-radius:10px;
-        border:1px solid #ddd;
-        display:block;
-      "
-      onerror="this.style.display='none'">
+        ${i.image_url ? `
+          <img src="${i.image_url}" 
+          style="
+            width:60px;
+            height:60px;
+            object-fit:cover;
+            border-radius:8px;
+            border:1px solid #ddd;
+            margin-bottom:6px;
+          "
+          onerror="this.style.display='none'">
+        ` : ""}
 
-      <div style="font-size:10px;color:gray;">
-        ${i.image_url}
+        <b>${i.name}</b><br>
+        ₹${i.price}
+
+        <br><br>
+
+        <input type="file" accept="image/*" 
+          onchange="uploadImage(${i.id}, this.files[0])">
+
+      </div>
+
+      <div>
+        <button class="btn ${i.is_available?'green':'red'}"
+          onclick="toggleItem(${i.id},${i.is_available})">
+          ${i.is_available?'ON':'OFF'}
+        </button>
+
+        <button class="btn blue"
+          onclick="editItem(${i.id},'${i.name}',${i.price},'${i.image_url||''}')">
+          Edit
+        </button>
       </div>
 
     </div>
-  ` : ""}
-
-  <b>${i.name}</b><br>
-  ₹${i.price}
-  
-    <br><br>
-
-    <input type="file" accept="image/*" 
-      onchange="uploadImage(${i.id}, this.files[0])">
-
-  </div>
-
-  <div>
-    <button class="btn ${i.is_available?'green':'red'}"
-      onclick="toggleItem(${i.id},${i.is_available})">
-      ${i.is_available?'ON':'OFF'}
-    </button>
-
-    <button class="btn blue"
-      onclick="editItem(${i.id},'${i.name}',${i.price},'${i.image_url||''}')">
-      Edit
-    </button>
-  </div>
-</div>
   </div>`;
  });
 }
-
-async function toggleItem(id,val){
+ 
+ async function toggleItem(id,val){
  await fetch(URL+"/rest/v1/items?id=eq."+id,{
   method:"PATCH",
 headers:{
@@ -237,7 +237,10 @@ headers:{
 },
   body:JSON.stringify({is_available:!val})
  });
- await loadData();
+await loadData();
+if(currentView==="restaurants") renderRestaurants();
+if(currentView==="categories") renderCategories();
+if(currentView==="items") renderItems();
 }
 
 async function editItem(id,n,p,img){
