@@ -121,20 +121,108 @@ async function addItem(){
 }
 
 function renderItems(){
+
   const box = document.getElementById("list");
+  const rid = document.getElementById("rest").value;
+
   box.innerHTML = "";
 
-  items.forEach(i=>{
-    box.innerHTML += `
-      <div class="card">
-        ${i.name} - ₹${i.price}
-        <br>
-        <button class="small-btn" onclick="del(${i.id})">Delete</button>
-      </div>
-    `;
-  });
+  items
+    .filter(i => i.restaurant_id == rid)
+    .forEach(i => {
+
+      box.innerHTML += `
+        <div class="card">
+          <b>${i.name}</b><br>
+          ₹${i.price}
+
+          <div style="margin-top:6px;">
+            <button class="small-btn" onclick="editItem(${i.id}, '${i.name}', ${i.price})">Edit</button>
+            <button class="small-btn" onclick="toggleItem(${i.id}, ${i.is_available})">
+              ${i.is_available ? 'Disable' : 'Enable'}
+            </button>
+            <button class="small-btn" onclick="del(${i.id})">Delete</button>
+          </div>
+        </div>
+      `;
+    });
 }
 
+  function renderItems(){
+
+  const box = document.getElementById("list");
+  const rid = document.getElementById("rest").value;
+
+  box.innerHTML = "";
+
+  items
+    .filter(i => i.restaurant_id == rid)
+    .forEach(i => {
+
+      box.innerHTML += `
+        <div class="card">
+          <b>${i.name}</b><br>
+          ₹${i.price}
+
+          <div style="margin-top:6px;">
+            <button class="small-btn" onclick="editItem(${i.id}, '${i.name}', ${i.price})">Edit</button>
+            <button class="small-btn" onclick="toggleItem(${i.id}, ${i.is_available})">
+              ${i.is_available ? 'Disable' : 'Enable'}
+            </button>
+            <button class="small-btn" onclick="del(${i.id})">Delete</button>
+          </div>
+        </div>
+      `;
+    });
+}
+
+  async function editItem(id, oldName, oldPrice){
+
+  const name = prompt("Edit name", oldName);
+  if(!name) return;
+
+  const price = prompt("Edit price", oldPrice);
+  if(!price) return;
+
+  await fetch(URL+"/rest/v1/items?id=eq."+id,{
+    method:"PATCH",
+    headers:{
+      apikey:KEY,
+      Authorization:`Bearer ${KEY}`,
+      "Content-Type":"application/json"
+    },
+    body:JSON.stringify({
+      name:name,
+      price:price
+    })
+  });
+
+  loadData();
+}
+
+  async function toggleItem(id, current){
+
+  await fetch(URL+"/rest/v1/items?id=eq."+id,{
+    method:"PATCH",
+    headers:{
+      apikey:KEY,
+      Authorization:`Bearer ${KEY}`,
+      "Content-Type":"application/json"
+    },
+    body:JSON.stringify({
+      is_available: !current
+    })
+  });
+
+  loadData();
+}
+
+  document.getElementById("rest").onchange = () => {
+  updateCats();
+  renderItems();
+};
+
+  
 async function del(id){
   await fetch(URL+"/rest/v1/items?id=eq."+id,{
     method:"DELETE",
