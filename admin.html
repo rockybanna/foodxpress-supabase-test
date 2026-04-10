@@ -266,8 +266,7 @@ function back2(){
   return;
  }
 
- const fileName = Date.now() + "_" + file.name;
-
+const fileName = Date.now() + "_" + file.name.replace(/\s+/g, "_");
  const res = await fetch(
   URL + "/storage/v1/object/item-images/" + fileName,
   {
@@ -286,8 +285,7 @@ function back2(){
   return;
  }
 
- const publicUrl = URL + "/storage/v1/object/public/item-images/" + fileName;
-
+const publicUrl = URL + "/storage/v1/object/public/item-images/" + encodeURIComponent(fileName);
  await fetch(URL+"/rest/v1/items?id=eq."+itemId,{
   method:"PATCH",
   headers:{
