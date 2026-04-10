@@ -45,7 +45,8 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
 let restaurants=[],categories=[],items=[];
 let currentRestaurant=null;
 let currentCategory=null;
-
+let currentView = "restaurants";
+ 
 function login(){
  if(document.getElementById("pass").value===PASS){
   document.getElementById("login").style.display="none";
@@ -61,7 +62,15 @@ async function loadData(){
  categories=await (await fetch(URL+"/rest/v1/categories",{headers:h})).json();
  items=await (await fetch(URL+"/rest/v1/items",{headers:h})).json();
 
- renderRestaurants();
+if(currentView==="restaurants"){
+  renderRestaurants();
+}
+else if(currentView==="categories"){
+  renderCategories();
+}
+else if(currentView==="items"){
+  renderItems();
+}
 }
 
 /* ================= RESTAURANTS ================= */
@@ -95,13 +104,14 @@ headers:{
 },
   body:JSON.stringify({is_active:!val})
  });
- loadData();
+ await loadData();
 }
 
 function openRestaurant(id){
  currentRestaurant=id;
  screen1.style.display="none";
  screen2.style.display="block";
+ currentView = "categories";
  renderCategories();
 }
 
@@ -137,21 +147,23 @@ headers:{
 },
   body:JSON.stringify({is_active:!val})
  });
- loadData();
+ await loadData();
 }
 
 function openCategory(id){
  currentCategory=id;
  screen2.style.display="none";
  screen3.style.display="block";
+ currentView = "items";
  renderItems();
 }
 
 function back1(){
  screen2.style.display="none";
  screen1.style.display="block";
+ currentView = "restaurants";
 }
-
+ 
 /* ================= ITEMS ================= */
 
 function renderItems(){
@@ -193,7 +205,7 @@ headers:{
 },
   body:JSON.stringify({is_available:!val})
  });
- loadData();
+ await loadData();
 }
 
 async function editItem(id,n,p,img){
@@ -224,12 +236,13 @@ async function editItem(id,n,p,img){
   })
  });
 
- loadData();
+ await loadData();
 }
  
 function back2(){
  screen3.style.display="none";
  screen2.style.display="block";
+ currentView = "categories";
 }
 </script>
 
