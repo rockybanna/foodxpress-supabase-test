@@ -86,7 +86,13 @@ function renderRestaurants(){
 async function toggleRestaurant(id,val){
  await fetch(URL+"/rest/v1/restaurants?id=eq."+id,{
   method:"PATCH",
-  headers:{apikey:KEY,Authorization:`Bearer ${KEY}`,"Content-Type":"application/json"},
+  
+headers:{
+ apikey:KEY,
+ Authorization:`Bearer ${KEY}`,
+ "Content-Type":"application/json",
+ "Prefer":"return=minimal"
+},
   body:JSON.stringify({is_active:!val})
  });
  loadData();
@@ -123,7 +129,12 @@ function renderCategories(){
 async function toggleCategory(id,val){
  await fetch(URL+"/rest/v1/categories?id=eq."+id,{
   method:"PATCH",
-  headers:{apikey:KEY,Authorization:`Bearer ${KEY}`,"Content-Type":"application/json"},
+headers:{
+ apikey:KEY,
+ Authorization:`Bearer ${KEY}`,
+ "Content-Type":"application/json",
+ "Prefer":"return=minimal"
+},
   body:JSON.stringify({is_active:!val})
  });
  loadData();
@@ -174,7 +185,12 @@ function renderItems(){
 async function toggleItem(id,val){
  await fetch(URL+"/rest/v1/items?id=eq."+id,{
   method:"PATCH",
-  headers:{apikey:KEY,Authorization:`Bearer ${KEY}`,"Content-Type":"application/json"},
+headers:{
+ apikey:KEY,
+ Authorization:`Bearer ${KEY}`,
+ "Content-Type":"application/json",
+ "Prefer":"return=minimal"
+},
   body:JSON.stringify({is_available:!val})
  });
  loadData();
@@ -186,23 +202,31 @@ async function editItem(id,n,p,img){
  if(!name) return;
 
  const price=prompt("Price",p);
- if(!price || price<=0) return alert("Invalid price");
+ if(!price || isNaN(price) || Number(price)<=0){
+  alert("Invalid price");
+  return;
+ }
 
  const image=prompt("Image URL",img||"");
 
  await fetch(URL+"/rest/v1/items?id=eq."+id,{
   method:"PATCH",
-  headers:{apikey:KEY,Authorization:`Bearer ${KEY}`,"Content-Type":"application/json"},
+  headers:{
+   apikey:KEY,
+   Authorization:`Bearer ${KEY}`,
+   "Content-Type":"application/json",
+   "Prefer":"return=minimal"
+  },
   body:JSON.stringify({
-    name:name,
-    price:Number(price),
-    image_url:image
+   name:name,
+   price:Number(price),
+   image_url:image
   })
  });
 
  loadData();
 }
-
+ 
 function back2(){
  screen3.style.display="none";
  screen2.style.display="block";
