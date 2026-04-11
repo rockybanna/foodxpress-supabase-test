@@ -2,74 +2,36 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Admin Panel Pro</title>
+<title>Admin Panel Lite</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 body{font-family:Arial;margin:0;background:#f5f5f5}
-.header{background:#e53935;color:#fff;padding:14px;text-align:center;font-weight:800}
-.container{padding:12px}
+.header{background:#e53935;color:#fff;padding:12px;text-align:center;font-weight:800}
+.container{padding:10px}
 
 .card{
- background:#fff;
- padding:12px;
- margin-bottom:10px;
- border-radius:12px;
- box-shadow:0 2px 6px rgba(0,0,0,0.08)
-}
-
-.row{
  display:flex;
  justify-content:space-between;
  align-items:center;
- gap:10px
+ background:#fff;
+ padding:8px;
+ margin-bottom:6px;
+ border-radius:10px;
 }
 
-img{
- width:70px;
- height:70px;
- object-fit:cover;
- border-radius:10px
-}
+.left{display:flex;gap:10px;align-items:center}
 
-/* toggle switch */
-.switch{
- position:relative;
- display:inline-block;
- width:40px;
- height:22px;
-}
-.switch input{display:none;}
-.slider{
- position:absolute;
- cursor:pointer;
- top:0;left:0;right:0;bottom:0;
- background:#ccc;
- border-radius:22px;
-}
-.slider:before{
- position:absolute;
- content:"";
- height:18px;width:18px;
- left:2px;bottom:2px;
- background:white;
- border-radius:50%;
- transition:.2s;
-}
-input:checked + .slider{
- background:#2e7d32;
-}
-input:checked + .slider:before{
- transform:translateX(18px);
-}
+img{width:50px;height:50px;border-radius:6px;object-fit:cover}
 
-.btn{
- padding:6px 10px;
- border-radius:8px;
- border:none;
- color:#fff;
- font-size:12px;
-}
+.switch{position:relative;width:40px;height:20px}
+.switch input{display:none}
+.slider{position:absolute;inset:0;background:#ccc;border-radius:20px}
+.slider:before{content:"";position:absolute;width:16px;height:16px;left:2px;bottom:2px;background:#fff;border-radius:50%}
+input:checked + .slider{background:#2e7d32}
+input:checked + .slider:before{transform:translateX(18px)}
+
+.btn{padding:4px 6px;border:none;border-radius:6px;color:#fff;font-size:11px}
 .blue{background:#1976d2}
 .red{background:#c62828}
 .green{background:#2e7d32}
@@ -92,12 +54,17 @@ input:checked + .slider:before{
 </div>
 
 <script>
+
+/* ===== CONFIG ===== */
+
 const PASS="1234";
 const URL="https://nhjglpjekexgldahkpjv.supabase.co";
 const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5oamdscGpla2V4Z2xkYWhrcGp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3MzYwNDksImV4cCI6MjA5MTMxMjA0OX0.mKvmkiWhxFdgE_u1_rJ2MD06EQ7VnFnZ2_4eU1MCGAU";
 
 let restaurants=[],categories=[],items=[];
 let currentRestaurant=null,currentCategory=null,currentView="restaurants";
+
+/* ===== HEADERS ===== */
 
 function h(){
  return {
@@ -108,43 +75,60 @@ function h(){
  };
 }
 
+/* ===== LOGIN ===== */
+
 function login(){
- if(pass.value===PASS){
-  login.style.display="none";
-  app.style.display="block";
-  loadData();
- } else alert("Wrong password");
+ if(pass.value!==PASS) return alert("Wrong password");
+ login.style.display="none";
+ app.style.display="block";
+ loadData();
 }
 
-async function loadData(){
- restaurants=await (await fetch(URL+"/rest/v1/restaurants",{headers:h()})).json();
- categories=await (await fetch(URL+"/rest/v1/categories",{headers:h()})).json();
- items=await (await fetch(URL+"/rest/v1/items",{headers:h()})).json();
+/* ===== LOAD ===== */
 
+async function loadData(){
+ restaurants = await fetch(URL+"/rest/v1/restaurants",{headers:h()}).then(r=>r.json());
+ categories  = await fetch(URL+"/rest/v1/categories",{headers:h()}).then(r=>r.json());
+ items       = await fetch(URL+"/rest/v1/items",{headers:h()}).then(r=>r.json());
+ render();
+}
+
+/* ===== ROUTER ===== */
+
+function render(){
  if(currentView==="restaurants") renderRestaurants();
  if(currentView==="categories") renderCategories();
  if(currentView==="items") renderItems();
 }
 
-/* RESTAURANTS */
+/* ===== RESTAURANTS ===== */
 
 function renderRestaurants(){
- screen1.innerHTML="<h3>Restaurants</h3>";
- restaurants.forEach(r=>{
-  screen1.innerHTML+=`
+
+ screen1.style.display="block";
+ screen2.style.display="none";
+
+ screen1.innerHTML = `
+ <h3>Restaurants</h3>
+ ${restaurants.map(r=>`
   <div class="card">
-    <div class="row">
-      <b onclick="openRestaurant(${r.id})">${r.name}</b>
+   <div class="left">
+    <b onclick="openRestaurant(${r.id})">${r.name}</b>
+   </div>
+   <label class="switch">
+    <input type="checkbox" ${r.is_active?'checked':''}
+    onchange="toggleRestaurant(${r.id},${r.is_active})">
+    <span class="slider"></span>
+   </label>
+  </div>
+ `).join("")}
+ `;
+}
 
-      <label class="switch">
-        <input type="checkbox" ${r.is_active?'checked':''}
-        onchange="toggleRestaurant(${r.id},${r.is_active})">
-        <span class="slider"></span>
-      </label>
-
-    </div>
-  </div>`;
- });
+function openRestaurant(id){
+ currentRestaurant=id;
+ currentView="categories";
+ render();
 }
 
 async function toggleRestaurant(id,val){
@@ -153,45 +137,49 @@ async function toggleRestaurant(id,val){
   headers:h(),
   body:JSON.stringify({is_active:!val})
  });
- await loadData();
+ loadData();
 }
 
-function openRestaurant(id){
- currentRestaurant=id;
- currentView="categories";
- screen1.style.display="none";
- screen2.style.display="block";
- renderCategories();
-}
-
-/* CATEGORIES */
+/* ===== CATEGORIES ===== */
 
 function renderCategories(){
- const list=categories
- .filter(c=>c.restaurant_id==currentRestaurant)
- .sort((a,b)=>a.sort_order-b.sort_order);
 
- screen2.innerHTML=`
+ screen1.style.display="none";
+ screen2.style.display="block";
+
+ const list = categories
+  .filter(c=>c.restaurant_id==currentRestaurant)
+  .sort((a,b)=>a.sort_order-b.sort_order);
+
+ screen2.innerHTML = `
  <button onclick="back1()">⬅ Back</button>
  <h3>Categories</h3>
- <button class="btn green" onclick="addCategory()">+ Add Category</button>
- `;
+ <button class="btn green" onclick="addCategory()">+ Add</button>
 
- list.forEach(c=>{
-  screen2.innerHTML+=`
+ ${list.map(c=>`
   <div class="card">
-    <div class="row">
-      <b onclick="openCategory(${c.id})">${c.name}</b>
+   <div class="left">
+    <b onclick="openCategory(${c.id})">${c.name}</b>
+   </div>
+   <label class="switch">
+    <input type="checkbox" ${c.is_active?'checked':''}
+    onchange="toggleCategory(${c.id},${c.is_active})">
+    <span class="slider"></span>
+   </label>
+  </div>
+ `).join("")}
+ `;
+}
 
-      <label class="switch">
-        <input type="checkbox" ${c.is_active?'checked':''}
-        onchange="toggleCategory(${c.id},${c.is_active})">
-        <span class="slider"></span>
-      </label>
+function back1(){
+ currentView="restaurants";
+ render();
+}
 
-    </div>
-  </div>`;
- });
+function openCategory(id){
+ currentCategory=id;
+ currentView="items";
+ render();
 }
 
 async function toggleCategory(id,val){
@@ -200,81 +188,73 @@ async function toggleCategory(id,val){
   headers:h(),
   body:JSON.stringify({is_active:!val})
  });
- await loadData();
+ loadData();
 }
 
 async function addCategory(){
- const name=prompt("Category Name");
+ const name = prompt("Category Name");
  if(!name) return;
 
  await fetch(URL+"/rest/v1/categories",{
   method:"POST",
   headers:h(),
   body:JSON.stringify({
-    name,
-    restaurant_id:currentRestaurant
+   name:name,
+   restaurant_id:currentRestaurant
   })
  });
 
- await loadData();
+ loadData();
 }
 
-function openCategory(id){
- currentCategory=id;
- currentView="items";
- screen2.style.display="none";
- screen3.style.display="block";
- renderItems();
-}
-
-function back1(){
- currentView="restaurants";
- screen2.style.display="none";
- screen1.style.display="block";
-}
-
-/* ITEMS */
+/* ===== ITEMS ===== */
 
 function renderItems(){
- const list=items
- .filter(i=>i.category_id==currentCategory)
- .sort((a,b)=>a.sort_order-b.sort_order);
 
- screen3.innerHTML=`
+ screen2.style.display="none";
+ screen3.style.display="block";
+
+ const list = items
+  .filter(i=>i.category_id==currentCategory)
+  .sort((a,b)=>a.sort_order-b.sort_order);
+
+ screen3.innerHTML = `
  <button onclick="back2()">⬅ Back</button>
  <h3>Items</h3>
- <button class="btn green" onclick="addItem()">+ Add Item</button>
- `;
+ <button class="btn green" onclick="addItem()">+ Add</button>
 
- list.forEach(i=>{
-  screen3.innerHTML+=`
+ ${list.map(i=>`
   <div class="card">
-    <div class="row">
 
-      <div>
-        ${i.image_url?`<img src="${i.image_url}"><br>`:""}
-        <b>${i.name}</b><br>
-        ₹${i.price}
-        <br><br>
-        <input type="file" onchange="uploadImage(${i.id},this.files[0])">
-      </div>
-
-      <div>
-        <label class="switch">
-          <input type="checkbox" ${i.is_available?'checked':''}
-          onchange="toggleItem(${i.id},${i.is_available})">
-          <span class="slider"></span>
-        </label>
-
-        <br><br>
-
-        <button class="btn blue" onclick="editItem(${i.id},'${i.name}',${i.price})">Edit</button>
-        <button class="btn red" onclick="deleteItem(${i.id})">Delete</button>
-      </div>
-
+   <div class="left">
+    ${i.image_url?`<img src="${i.image_url}">`:""}
+    <div>
+     <b>${i.name}</b><br>
+     ₹${i.price}
+     <br>
+     <input type="file" onchange="uploadImage(${i.id},this.files[0])">
     </div>
-  </div>`;
- });
+   </div>
+
+   <div>
+    <label class="switch">
+     <input type="checkbox" ${i.is_available?'checked':''}
+     onchange="toggleItem(${i.id},${i.is_available})">
+     <span class="slider"></span>
+    </label>
+    <br>
+    <button class="btn blue" onclick="editItem(${i.id},'${i.name}',${i.price})">Edit</button>
+    <button class="btn red" onclick="deleteItem(${i.id})">Del</button>
+   </div>
+
+  </div>
+ `).join("")}
+ `;
+}
+
+function back2(){
+ currentView="categories";
+ render();
 }
 
 async function toggleItem(id,val){
@@ -283,39 +263,42 @@ async function toggleItem(id,val){
   headers:h(),
   body:JSON.stringify({is_available:!val})
  });
- await loadData();
+ loadData();
 }
 
 async function addItem(){
- const name=prompt("Item name");
- const price=prompt("Price");
+ const name = prompt("Item name");
+ const price = prompt("Price");
  if(!name || !price) return;
 
  await fetch(URL+"/rest/v1/items",{
   method:"POST",
   headers:h(),
   body:JSON.stringify({
-    name,
-    price:Number(price),
-    category_id:currentCategory
+   name:name,
+   price:Number(price),
+   category_id:currentCategory
   })
  });
 
- await loadData();
+ loadData();
 }
 
 async function editItem(id,n,p){
- const name=prompt("Name",n);
- const price=prompt("Price",p);
+ const name = prompt("Name",n);
+ const price = prompt("Price",p);
  if(!name || !price) return;
 
  await fetch(URL+"/rest/v1/items?id=eq."+id,{
   method:"PATCH",
   headers:h(),
-  body:JSON.stringify({name,price:Number(price)})
+  body:JSON.stringify({
+   name:name,
+   price:Number(price)
+  })
  });
 
- await loadData();
+ loadData();
 }
 
 async function deleteItem(id){
@@ -326,31 +309,26 @@ async function deleteItem(id){
   headers:h()
  });
 
- await loadData();
+ loadData();
 }
 
-function back2(){
- currentView="categories";
- screen3.style.display="none";
- screen2.style.display="block";
-}
-
-/* IMAGE */
+/* ===== IMAGE ===== */
 
 async function uploadImage(id,file){
- const fileName=Date.now()+"_"+file.name.replace(/\s/g,"_");
+
+ const fileName = Date.now()+"_"+file.name.replace(/\s/g,"_");
 
  await fetch(URL+"/storage/v1/object/item-images/"+fileName,{
   method:"POST",
   headers:{
-    apikey:KEY,
-    Authorization:`Bearer ${KEY}`,
-    "Content-Type":file.type
+   apikey:KEY,
+   Authorization:`Bearer ${KEY}`,
+   "Content-Type":file.type
   },
   body:file
  });
 
- const url=URL+"/storage/v1/object/public/item-images/"+encodeURIComponent(fileName);
+ const url = URL+"/storage/v1/object/public/item-images/"+encodeURIComponent(fileName);
 
  await fetch(URL+"/rest/v1/items?id=eq."+id,{
   method:"PATCH",
@@ -358,8 +336,9 @@ async function uploadImage(id,file){
   body:JSON.stringify({image_url:url})
  });
 
- await loadData();
+ loadData();
 }
+
 </script>
 
 </body>
