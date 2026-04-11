@@ -42,9 +42,9 @@ input:checked + .slider:before{transform:translateX(18px)}
 
 <div class="header">Admin Panel</div>
 
-<div id="login" class="container">
+<div id="loginScreen" class="container">
 <input id="pass" type="password" placeholder="Password">
-<button onclick="login()">Login</button>
+<button onclick="doLogin()">Login</button>
 </div>
 
 <div id="app" style="display:none">
@@ -77,25 +77,31 @@ function h(){
 
 /* ===== LOGIN ===== */
 
-function login(){
+function doLogin(){
+
  if(pass.value!==PASS) return alert("Wrong password");
- login.style.display="none";
- app.style.display="block";
+
+ document.getElementById("loginScreen").style.display="none";
+ document.getElementById("app").style.display="block";
+
  loadData();
 }
 
 /* ===== LOAD ===== */
 
 async function loadData(){
+
  restaurants = await fetch(URL+"/rest/v1/restaurants",{headers:h()}).then(r=>r.json());
  categories  = await fetch(URL+"/rest/v1/categories",{headers:h()}).then(r=>r.json());
  items       = await fetch(URL+"/rest/v1/items",{headers:h()}).then(r=>r.json());
+
  render();
 }
 
 /* ===== ROUTER ===== */
 
 function render(){
+
  if(currentView==="restaurants") renderRestaurants();
  if(currentView==="categories") renderCategories();
  if(currentView==="items") renderItems();
@@ -110,16 +116,20 @@ function renderRestaurants(){
 
  screen1.innerHTML = `
  <h3>Restaurants</h3>
+
  ${restaurants.map(r=>`
   <div class="card">
+
    <div class="left">
     <b onclick="openRestaurant(${r.id})">${r.name}</b>
    </div>
+
    <label class="switch">
     <input type="checkbox" ${r.is_active?'checked':''}
     onchange="toggleRestaurant(${r.id},${r.is_active})">
     <span class="slider"></span>
    </label>
+
   </div>
  `).join("")}
  `;
@@ -132,11 +142,13 @@ function openRestaurant(id){
 }
 
 async function toggleRestaurant(id,val){
+
  await fetch(URL+"/rest/v1/restaurants?id=eq."+id,{
   method:"PATCH",
   headers:h(),
   body:JSON.stringify({is_active:!val})
  });
+
  loadData();
 }
 
@@ -158,14 +170,17 @@ function renderCategories(){
 
  ${list.map(c=>`
   <div class="card">
+
    <div class="left">
     <b onclick="openCategory(${c.id})">${c.name}</b>
    </div>
+
    <label class="switch">
     <input type="checkbox" ${c.is_active?'checked':''}
     onchange="toggleCategory(${c.id},${c.is_active})">
     <span class="slider"></span>
    </label>
+
   </div>
  `).join("")}
  `;
@@ -183,15 +198,18 @@ function openCategory(id){
 }
 
 async function toggleCategory(id,val){
+
  await fetch(URL+"/rest/v1/categories?id=eq."+id,{
   method:"PATCH",
   headers:h(),
   body:JSON.stringify({is_active:!val})
  });
+
  loadData();
 }
 
 async function addCategory(){
+
  const name = prompt("Category Name");
  if(!name) return;
 
@@ -230,8 +248,7 @@ function renderItems(){
     ${i.image_url?`<img src="${i.image_url}">`:""}
     <div>
      <b>${i.name}</b><br>
-     ₹${i.price}
-     <br>
+     ₹${i.price}<br>
      <input type="file" onchange="uploadImage(${i.id},this.files[0])">
     </div>
    </div>
@@ -257,16 +274,21 @@ function back2(){
  render();
 }
 
+/* ===== ITEM ACTIONS ===== */
+
 async function toggleItem(id,val){
+
  await fetch(URL+"/rest/v1/items?id=eq."+id,{
   method:"PATCH",
   headers:h(),
   body:JSON.stringify({is_available:!val})
  });
+
  loadData();
 }
 
 async function addItem(){
+
  const name = prompt("Item name");
  const price = prompt("Price");
  if(!name || !price) return;
@@ -285,6 +307,7 @@ async function addItem(){
 }
 
 async function editItem(id,n,p){
+
  const name = prompt("Name",n);
  const price = prompt("Price",p);
  if(!name || !price) return;
@@ -302,6 +325,7 @@ async function editItem(id,n,p){
 }
 
 async function deleteItem(id){
+
  if(!confirm("Delete item?")) return;
 
  await fetch(URL+"/rest/v1/items?id=eq."+id,{
