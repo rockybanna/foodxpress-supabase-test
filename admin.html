@@ -2,39 +2,27 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Admin Panel Lite</title>
+<title>Food Xpress Admin</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 body{font-family:Arial;margin:0;background:#f5f5f5}
 .header{background:#e53935;color:#fff;padding:12px;text-align:center;font-weight:800}
 .container{padding:10px}
-
 .card{
  display:flex;
  justify-content:space-between;
  align-items:center;
  background:#fff;
- padding:8px;
- margin-bottom:6px;
+ padding:10px;
+ margin-bottom:8px;
  border-radius:10px;
 }
-
-.left{display:flex;gap:10px;align-items:center}
-
-img{width:50px;height:50px;border-radius:6px;object-fit:cover}
-
-.switch{position:relative;width:40px;height:20px}
-.switch input{display:none}
-.slider{position:absolute;inset:0;background:#ccc;border-radius:20px}
-.slider:before{content:"";position:absolute;width:16px;height:16px;left:2px;bottom:2px;background:#fff;border-radius:50%}
-input:checked + .slider{background:#2e7d32}
-input:checked + .slider:before{transform:translateX(18px)}
-
-.btn{padding:4px 6px;border:none;border-radius:6px;color:#fff;font-size:11px}
+.btn{padding:6px 8px;border:none;border-radius:6px;color:#fff;font-size:12px}
 .blue{background:#1976d2}
 .red{background:#c62828}
 .green{background:#2e7d32}
+input,textarea{width:100%;padding:8px;margin:5px 0}
 </style>
 </head>
 
@@ -42,94 +30,74 @@ input:checked + .slider:before{transform:translateX(18px)}
 
 <div class="header">Admin Panel</div>
 
-<div id="loginScreen" class="container">
+<div id="login">
 <input id="pass" type="password" placeholder="Password">
-<button onclick="doLogin()">Login</button>
+<button onclick="login()">Login</button>
 </div>
 
 <div id="app" style="display:none">
-<div class="container" id="screen1"></div>
-<div class="container" id="screen2" style="display:none"></div>
-<div class="container" id="screen3" style="display:none"></div>
+<div class="container" id="screen"></div>
 </div>
 
 <script>
 
-/* ===== CONFIG ===== */
+/* 🔥 CONFIG (your new project) */
+const URL = "https://zozzoqzryejpkbddzoyi.supabase.co";
+const KEY = "YOUR-ANON-KEY"; // keep same for now
 
-const PASS="1234";
-const URL="https://zozzoqzryejpkbddzoyi.supabase.co";
-const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvenpvcXpyeWVqcGtiZGR6b3lpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NDMwNzIsImV4cCI6MjA5MTUxOTA3Mn0.RYQqP5mVTtga4Y1XsBTRs_o58Bj2gSLZ5Se6YMak-UE";
-
-let restaurants=[],categories=[],items=[];
-let currentRestaurant=null,currentCategory=null,currentView="restaurants";
-
-/* ===== HEADERS ===== */
+const PASS = "admin123"; // change later
 
 function h(){
  return {
   apikey:KEY,
   Authorization:`Bearer ${KEY}`,
-  "Content-Type":"application/json",
-  "Prefer":"return=minimal"
+  "Content-Type":"application/json"
  };
 }
 
-/* ===== LOGIN ===== */
+let restaurants=[],categories=[],items=[],variants=[],addons=[];
+let currentRestaurant=null,currentCategory=null,currentItem=null;
+let view="restaurants";
 
-function doLogin(){
-
+/* LOGIN */
+function login(){
  if(pass.value!==PASS) return alert("Wrong password");
-
- document.getElementById("loginScreen").style.display="none";
- document.getElementById("app").style.display="block";
-
+ login.style.display="none";
+ app.style.display="block";
  loadData();
 }
 
-/* ===== LOAD ===== */
-
+/* LOAD DATA */
 async function loadData(){
 
  restaurants = await fetch(URL+"/rest/v1/restaurants",{headers:h()}).then(r=>r.json());
  categories  = await fetch(URL+"/rest/v1/categories",{headers:h()}).then(r=>r.json());
  items       = await fetch(URL+"/rest/v1/items",{headers:h()}).then(r=>r.json());
+ variants    = await fetch(URL+"/rest/v1/variants",{headers:h()}).then(r=>r.json());
+ addons      = await fetch(URL+"/rest/v1/addons",{headers:h()}).then(r=>r.json());
 
  render();
 }
 
-/* ===== ROUTER ===== */
-
+/* ROUTER */
 function render(){
-
- if(currentView==="restaurants") renderRestaurants();
- if(currentView==="categories") renderCategories();
- if(currentView==="items") renderItems();
+ if(view==="restaurants") renderRestaurants();
+ if(view==="categories") renderCategories();
+ if(view==="items") renderItems();
+ if(view==="variants") renderVariants();
+ if(view==="addons") renderAddons();
 }
 
-/* ===== RESTAURANTS ===== */
-
+/* RESTAURANTS */
 function renderRestaurants(){
 
- screen1.style.display="block";
- screen2.style.display="none";
-
- screen1.innerHTML = `
+ screen.innerHTML = `
  <h3>Restaurants</h3>
+ <button class="btn green" onclick="addRestaurant()">+ Add</button>
 
  ${restaurants.map(r=>`
   <div class="card">
-
-   <div class="left">
-    <b onclick="openRestaurant(${r.id})">${r.name}</b>
-   </div>
-
-   <label class="switch">
-    <input type="checkbox" ${r.is_active?'checked':''}
-    onchange="toggleRestaurant(${r.id},${r.is_active})">
-    <span class="slider"></span>
-   </label>
-
+    <b onclick="openRestaurant('${r.id}')">${r.name}</b>
   </div>
  `).join("")}
  `;
@@ -137,87 +105,56 @@ function renderRestaurants(){
 
 function openRestaurant(id){
  currentRestaurant=id;
- currentView="categories";
+ view="categories";
  render();
 }
 
-async function toggleRestaurant(id,val){
+async function addRestaurant(){
+ const name = prompt("Restaurant name");
+ if(!name) return;
 
- await fetch(URL+"/rest/v1/restaurants?id=eq."+id,{
-  method:"PATCH",
+ await fetch(URL+"/rest/v1/restaurants",{
+  method:"POST",
   headers:h(),
-  body:JSON.stringify({is_active:!val})
+  body:JSON.stringify({name})
  });
 
  loadData();
 }
 
-/* ===== CATEGORIES ===== */
-
+/* CATEGORIES */
 function renderCategories(){
 
- screen1.style.display="none";
- screen2.style.display="block";
+ const list = categories.filter(c=>c.restaurant_id==currentRestaurant);
 
- const list = categories
-  .filter(c=>c.restaurant_id==currentRestaurant)
-  .sort((a,b)=>a.sort_order-b.sort_order);
-
- screen2.innerHTML = `
- <button onclick="back1()">⬅ Back</button>
+ screen.innerHTML = `
+ <button onclick="view='restaurants';render()">⬅ Back</button>
  <h3>Categories</h3>
  <button class="btn green" onclick="addCategory()">+ Add</button>
 
  ${list.map(c=>`
   <div class="card">
-
-   <div class="left">
-    <b onclick="openCategory(${c.id})">${c.name}</b>
-   </div>
-
-   <label class="switch">
-    <input type="checkbox" ${c.is_active?'checked':''}
-    onchange="toggleCategory(${c.id},${c.is_active})">
-    <span class="slider"></span>
-   </label>
-
+    <b onclick="openCategory('${c.id}')">${c.name}</b>
   </div>
  `).join("")}
  `;
 }
 
-function back1(){
- currentView="restaurants";
- render();
-}
-
 function openCategory(id){
  currentCategory=id;
- currentView="items";
+ view="items";
  render();
-}
-
-async function toggleCategory(id,val){
-
- await fetch(URL+"/rest/v1/categories?id=eq."+id,{
-  method:"PATCH",
-  headers:h(),
-  body:JSON.stringify({is_active:!val})
- });
-
- loadData();
 }
 
 async function addCategory(){
-
- const name = prompt("Category Name");
+ const name = prompt("Category name");
  if(!name) return;
 
  await fetch(URL+"/rest/v1/categories",{
   method:"POST",
   headers:h(),
   body:JSON.stringify({
-   name:name,
+   name,
    restaurant_id:currentRestaurant
   })
  });
@@ -225,99 +162,48 @@ async function addCategory(){
  loadData();
 }
 
-/* ===== ITEMS ===== */
-
+/* ITEMS */
 function renderItems(){
 
- screen2.style.display="none";
- screen3.style.display="block";
+ const list = items.filter(i=>i.category_id==currentCategory);
 
- const list = items
-  .filter(i=>i.category_id==currentCategory)
-  .sort((a,b)=>a.sort_order-b.sort_order);
-
- screen3.innerHTML = `
- <button onclick="back2()">⬅ Back</button>
+ screen.innerHTML = `
+ <button onclick="view='categories';render()">⬅ Back</button>
  <h3>Items</h3>
  <button class="btn green" onclick="addItem()">+ Add</button>
 
  ${list.map(i=>`
   <div class="card">
-
-   <div class="left">
-    ${i.image_url?`<img src="${i.image_url}">`:""}
     <div>
-     <b>${i.name}</b><br>
-     ₹${i.price}<br>
-     <input type="file" onchange="uploadImage(${i.id},this.files[0])">
+      <b onclick="openItem('${i.id}')">${i.name}</b><br>
+      ₹${i.price}
     </div>
-   </div>
-
-   <div>
-    <label class="switch">
-     <input type="checkbox" ${i.is_available?'checked':''}
-     onchange="toggleItem(${i.id},${i.is_available})">
-     <span class="slider"></span>
-    </label>
-    <br>
-    <button class="btn blue" onclick="editItem(${i.id},'${i.name}',${i.price})">Edit</button>
-    <button class="btn red" onclick="deleteItem(${i.id})">Del</button>
-   </div>
-
+    <button class="btn red" onclick="deleteItem('${i.id}')">Del</button>
   </div>
  `).join("")}
  `;
 }
 
-function back2(){
- currentView="categories";
+function openItem(id){
+ currentItem=id;
+ view="variants";
  render();
 }
 
-/* ===== ITEM ACTIONS ===== */
-
-async function toggleItem(id,val){
-
- await fetch(URL+"/rest/v1/items?id=eq."+id,{
-  method:"PATCH",
-  headers:h(),
-  body:JSON.stringify({is_available:!val})
- });
-
- loadData();
-}
-
 async function addItem(){
-
  const name = prompt("Item name");
  const price = prompt("Price");
+
  if(!name || !price) return;
 
  await fetch(URL+"/rest/v1/items",{
   method:"POST",
   headers:h(),
   body:JSON.stringify({
-   name:name,
+   name,
    price:Number(price),
-   category_id:currentCategory
-  })
- });
-
- loadData();
-}
-
-async function editItem(id,n,p){
-
- const name = prompt("Name",n);
- const price = prompt("Price",p);
- if(!name || !price) return;
-
- await fetch(URL+"/rest/v1/items?id=eq."+id,{
-  method:"PATCH",
-  headers:h(),
-  body:JSON.stringify({
-   name:name,
-   price:Number(price)
+   category_id:currentCategory,
+   restaurant_id:currentRestaurant
   })
  });
 
@@ -325,39 +211,81 @@ async function editItem(id,n,p){
 }
 
 async function deleteItem(id){
-
- if(!confirm("Delete item?")) return;
-
  await fetch(URL+"/rest/v1/items?id=eq."+id,{
   method:"DELETE",
   headers:h()
+ });
+ loadData();
+}
+
+/* VARIANTS */
+function renderVariants(){
+
+ const list = variants.filter(v=>v.item_id==currentItem);
+
+ screen.innerHTML = `
+ <button onclick="view='items';render()">⬅ Back</button>
+ <h3>Variants</h3>
+ <button class="btn green" onclick="addVariant()">+ Add</button>
+
+ ${list.map(v=>`
+  <div class="card">
+    ${v.name} - ₹${v.price}
+  </div>
+ `).join("")}
+
+ <hr>
+ <button class="btn blue" onclick="view='addons';render()">Manage Addons →</button>
+ `;
+}
+
+async function addVariant(){
+ const name = prompt("Variant name (Half / Full)");
+ const price = prompt("Price");
+
+ await fetch(URL+"/rest/v1/variants",{
+  method:"POST",
+  headers:h(),
+  body:JSON.stringify({
+   name,
+   price:Number(price),
+   item_id:currentItem
+  })
  });
 
  loadData();
 }
 
-/* ===== IMAGE ===== */
+/* ADDONS */
+function renderAddons(){
 
-async function uploadImage(id,file){
+ const list = addons.filter(a=>a.item_id==currentItem);
 
- const fileName = Date.now()+"_"+file.name.replace(/\s/g,"_");
+ screen.innerHTML = `
+ <button onclick="view='variants';render()">⬅ Back</button>
+ <h3>Addons</h3>
+ <button class="btn green" onclick="addAddon()">+ Add</button>
 
- await fetch(URL+"/storage/v1/object/item-images/"+fileName,{
+ ${list.map(a=>`
+  <div class="card">
+    ${a.name} - ₹${a.price}
+  </div>
+ `).join("")}
+ `;
+}
+
+async function addAddon(){
+ const name = prompt("Addon name");
+ const price = prompt("Price");
+
+ await fetch(URL+"/rest/v1/addons",{
   method:"POST",
-  headers:{
-   apikey:KEY,
-   Authorization:`Bearer ${KEY}`,
-   "Content-Type":file.type
-  },
-  body:file
- });
-
- const url = URL+"/storage/v1/object/public/item-images/"+encodeURIComponent(fileName);
-
- await fetch(URL+"/rest/v1/items?id=eq."+id,{
-  method:"PATCH",
   headers:h(),
-  body:JSON.stringify({image_url:url})
+  body:JSON.stringify({
+   name,
+   price:Number(price),
+   item_id:currentItem
+  })
  });
 
  loadData();
