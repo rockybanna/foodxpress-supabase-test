@@ -61,12 +61,21 @@ let view="restaurants";
 
 /* LOGIN */
 function login(){
- if(pass.value!==PASS) return alert("Wrong password");
- login.style.display="none";
- app.style.display="block";
- loadData();
-}
 
+  const loginDiv = document.getElementById("login");
+  const appDiv = document.getElementById("app");
+
+  if(pass.value !== PASS){
+    alert("Wrong password");
+    return;
+  }
+
+  loginDiv.style.display = "none";
+  appDiv.style.display = "block";
+
+  loadData();
+}
+ 
 /* LOAD DATA */
 async function loadData(){
 
