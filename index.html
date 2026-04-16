@@ -998,7 +998,7 @@ ${itemVariants.map((v, index) => `
 <input type="radio" 
 name="var-${it.id}" 
 ${index === 0 ? "checked" : ""}
-onchange="selectVariant('${it.id}', ${v.price})">
+onchange="selectVariant('${it.id}', ${v.price}); renderMenu();"
 ${v.name} (₹${v.price})
 </label><br>
 `).join("")}
@@ -1011,7 +1011,7 @@ ${v.name} (₹${v.price})
               ${itemAddons.map(a => `
                 <label>
 <input type="checkbox"
-onchange="toggleAddon('${it.id}', ${a.price}, this.checked)">
+onchange="toggleAddon('${it.id}', ${a.price}, this.checked); renderMenu();"
 ${a.name} (+₹${a.price})
 </label><br>
               `).join("")}
@@ -1020,10 +1020,19 @@ ${a.name} (+₹${a.price})
         </div>
 
         <div class="qty">
-          <button onclick="upd('${it.ItemName}', 0, -1)">−</button>
-          <span>${cart[it.ItemName] || 0}</span>
-          <button onclick="upd('${it.ItemName}', 0, 1)">+</button>
-        </div>
+<button onclick="upd('${it.ItemName}', '${it.id}', -1)">−</button>
+<span>
+${
+cart[
+`${it.ItemName}__${variants.find(v =>
+  String(v.item_id) === String(it.id) &&
+  Number(v.price) === Number(selectedVariants[it.id])
+)?.name || "Default"}`
+] || 0
+}
+</span>
+<button onclick="upd('${it.ItemName}', '${it.id}', 1)">+</button>
+</div>
       </div>
     `;
   });
@@ -1039,9 +1048,20 @@ function scrollCat(c){document.getElementById("cat-"+c)?.scrollIntoView({behavio
 
 /* ================= CART ================= */
 
-function upd(itemName, priceIgnored, delta){
-  cart[itemName] = (cart[itemName] || 0) + delta;
-  if (cart[itemName] <= 0) delete cart[itemName];
+function upd(itemName, itemId, delta){
+
+  const variantPrice = selectedVariants[itemId] || 0;
+
+  const variantName = variants.find(v =>
+    String(v.item_id) === String(itemId) &&
+    Number(v.price) === Number(variantPrice)
+  )?.name || "Default";
+
+  const key = `${itemName}__${variantName}`;
+
+  cart[key] = (cart[key] || 0) + delta;
+
+  if (cart[key] <= 0) delete cart[key];
 
   if (stack.at(-1) === "page-menu") renderMenu();
   if (stack.at(-1) === "page-summary") renderSummary();
@@ -1049,23 +1069,27 @@ function upd(itemName, priceIgnored, delta){
   updateBar();
   updateSavingHint();
 }
+  
+  
+function price(key){
 
-function price(itemName){
+  const [itemName, variantName] = key.split("__");
 
   const it = items.find(i => i.ItemName === itemName);
-if(!it) return 0;
+  if(!it) return 0;
 
-let base = Number(it.Price);
+  const variantObj = variants.find(v =>
+    String(v.item_id) === String(it.id) &&
+    v.name === variantName
+  );
 
-// ✅ Variant replaces base
-if(selectedVariants[it.id]){
-  base = selectedVariants[it.id];
+  let base = variantObj ? Number(variantObj.price) : Number(it.Price);
+
+  const addonPrice = (selectedAddons[it.id] || []).reduce((a,b)=>a+b,0);
+
+  return base + addonPrice;
 }
 
-const addonPrice = (selectedAddons[it.id] || []).reduce((a,b)=>a+b,0);
-
-return base + addonPrice;
-}
   
 function updateBar(){
   let itemCount = 0, total = 0;
@@ -1095,34 +1119,30 @@ function renderSummary(){
   summaryItems.innerHTML = "";
   let total = 0;
 
-  for (const i in cart){
-    const p = price(i);
-    total += cart[i] * p;
+for (const i in cart){
 
-const it = items.find(x => x.ItemName === i);
+  const [itemName, variantName] = i.split("__");
 
-const variantObj = variants.find(v =>
-  String(v.item_id) === String(it.id) &&
-  Number(v.price) === Number(selectedVariants[it.id])
-);
+  const it = items.find(x => x.ItemName === itemName);
+  if(!it) continue;
 
-const variantText = variantObj
-  ? `(${variantObj.name} ₹${variantObj.price})`
-  : "";
-summaryItems.innerHTML += `
-  <div class="cart-item">
-    <div>
-      ${i} ${variantText}
-      <div class="small">₹${p}</div>
+  const p = price(i);
+  total += cart[i] * p;
+
+  summaryItems.innerHTML += `
+    <div class="cart-item">
+      <div>
+        ${itemName} (${variantName})
+        <div class="small">₹${p}</div>
       </div>
-        <div class="qty">
-          <button onclick="upd('${i}', ${p}, -1)">−</button>
-          <span>${cart[i]}</span>
-          <button onclick="upd('${i}', ${p}, 1)">+</button>
-        </div>
+      <div class="qty">
+        <button onclick="upd('${itemName}', '${it.id}', -1)">−</button>
+        <span>${cart[i]}</span>
+        <button onclick="upd('${itemName}', '${it.id}', 1)">+</button>
       </div>
-    `;
-  }
+    </div>
+  `;
+}
 
   itemTotal.innerText = `₹${total}`;
 
@@ -1399,18 +1419,12 @@ Items:
 
 for(const i in cart){
 
-  const it = items.find(x => x.ItemName === i);
+  const [itemName, variantName] = i.split("__");
 
-  const variantObj = variants.find(v =>
-    String(v.item_id) === String(it.id) &&
-    Number(v.price) === Number(selectedVariants[it.id])
-  );
+  const it = items.find(x => x.ItemName === itemName);
+  if(!it) continue;
 
-  const variantText = variantObj
-    ? ` (${variantObj.name})`
-    : "";
-
-  customerMsg += `• ${i}${variantText} × ${cart[i]} — ₹${cart[i] * price(i)}\n`;
+  customerMsg += `• ${itemName} (${variantName}) × ${cart[i]} — ₹${cart[i] * price(i)}\n`;
 }
   customerMsg +=
 `
