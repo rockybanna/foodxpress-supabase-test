@@ -553,6 +553,23 @@ let lat="",lng="",mapLink="";
 let pricedDistanceKm = 0;
 let orderId = "";
 let platformFee = 5;
+  let selectedVariants = {};
+let selectedAddons = {};
+
+function selectVariant(item, price){
+  selectedVariants[item] = price;
+}
+
+function toggleAddon(item, price, checked){
+
+  if(!selectedAddons[item]) selectedAddons[item] = [];
+
+  if(checked){
+    selectedAddons[item].push(price);
+  } else {
+    selectedAddons[item] = selectedAddons[item].filter(p => p !== price);
+  }
+}
 
 /* ================= DOM READY (PWA SAFE) ================= */
 let restaurantList, menuItems, catList, summaryItems,
@@ -594,16 +611,23 @@ async function loadData(){
       Authorization: `Bearer ${SUPABASE_KEY}`
     };
 
-    const [r1, r2, r3] = await Promise.all([
-      fetch(`${SUPABASE_URL}/rest/v1/restaurants`, { headers }),
-      fetch(`${SUPABASE_URL}/rest/v1/categories`, { headers }),
-      fetch(`${SUPABASE_URL}/rest/v1/items`, { headers })
-    ]);
+const [r1, r2, r3, r4, r5] = await Promise.all([
+  fetch(`${SUPABASE_URL}/rest/v1/restaurants`, { headers }),
+  fetch(`${SUPABASE_URL}/rest/v1/categories`, { headers }),
+  fetch(`${SUPABASE_URL}/rest/v1/items`, { headers }),
+  fetch(`${SUPABASE_URL}/rest/v1/variants`, { headers }),
+  fetch(`${SUPABASE_URL}/rest/v1/addons`, { headers })
+]);
 
-    const restaurantsData = await r1.json();
-    const categoriesData = await r2.json();
-    const itemsData = await r3.json();
+const restaurantsData = await r1.json();
+const categoriesData = await r2.json();
+const itemsData = await r3.json();
+const variantsData = await r4.json();
+const addonsData = await r5.json();
 
+variants = variantsData;
+addons = addonsData;
+    
     console.log("DATA:", restaurantsData); // 🔍 DEBUG
 
     restaurants = restaurantsData.map(r => ({
@@ -626,6 +650,7 @@ categories = categoriesData.map(c => ({
 }));
 
 items = itemsData.map(i => ({
+  id: i.id, // 🔥 VERY IMPORTANT
   RestaurantID: i.restaurant_id,
   CategoryID: i.category_id,
   ItemName: i.name,
@@ -885,7 +910,10 @@ function renderRestaurants(){
 
 /* ================= MENU ================= */
 function openMenu(id){
-
+  
+selectedVariants = {};
+selectedAddons = {};
+  
   cart = {};
   currentRestaurant = id;
 
@@ -932,34 +960,66 @@ function renderMenu(){
       </div>
     `;
 
-    (items || [])
-      .filter(i =>
-        String(i.RestaurantID) === String(rest.id) &&
-        String(i.CategoryID) === String(cat.CategoryID) &&
-        i.IsAvailable
-      )
-      .forEach(it => {
+(items || [])
+  .filter(i =>
+    String(i.RestaurantID) === String(rest.id) &&
+    String(i.CategoryID) === String(cat.CategoryID) &&
+    i.IsAvailable
+  )
+  .forEach(it => {
 
-        const q = cart[it.ItemName] || 0;
+const itemVariants = variants.filter(v =>
+  String(v.item_id || v.ItemID || v.itemId) === String(it.id)
+);
+const itemAddons = addons.filter(a =>
+  String(a.item_id || a.ItemID || a.itemId) === String(it.id)
+);
+    const basePrice = it.Price;
 
-        menuItems.innerHTML += `
-          <div class="item">
+    menuItems.innerHTML += `
+      <div class="item">
+        <div>
+          <div class="item-name">${it.ItemName}</div>
+          ${it.ItemDescription ? `<div class="item-desc">${it.ItemDescription}</div>` : ""}
+
+          <div class="small">₹${basePrice}</div>
+
+          ${itemVariants.length ? `
             <div>
-              <div class="item-name">${it.ItemName}</div>
-              ${it.ItemDescription ? `<div class="item-desc">${it.ItemDescription}</div>` : ""}
-              <div class="small">₹${it.Price}</div>
+              <b>Choose Size:</b><br>
+              ${itemVariants.map(v => `
+                <label>
+                  <input type="radio" name="var-${it.id}" 
+                  onchange="selectVariant('${it.id}', ${v.price})"
+                  ${v.name} (+₹${v.price})
+                </label><br>
+              `).join("")}
             </div>
-            <div class="qty">
-              <button onclick="upd('${it.ItemName}', 0, -1)">−</button>
-              <span>${q}</span>
-              <button onclick="upd('${it.ItemName}', 0, 1)">+</button>
-            </div>
-          </div>
-        `;
-      });
+          ` : ""}
 
+          ${itemAddons.length ? `
+            <div>
+              <b>Add Extras:</b><br>
+              ${itemAddons.map(a => `
+                <label>
+                  <input type="checkbox"
+                  onchange="toggleAddon('${it.id}', ${a.price}, this.checked)"
+                  ${a.name} (+₹${a.price})
+                </label><br>
+              `).join("")}
+            </div>
+          ` : ""}
+        </div>
+
+        <div class="qty">
+          <button onclick="upd('${it.ItemName}', 0, -1)">−</button>
+          <span>${cart[it.ItemName] || 0}</span>
+          <button onclick="upd('${it.ItemName}', 0, 1)">+</button>
+        </div>
+      </div>
+    `;
   });
-
+    
   updateBar();
   updateSavingHint();
 }
@@ -983,17 +1043,18 @@ function upd(itemName, priceIgnored, delta){
 }
 
 function price(itemName){
-  const rest = restaurants.find(r => String(r.id) === String(currentRestaurant));
-  if (!rest) return 0;
 
-  const it = items.find(
-    i => String(i.RestaurantID) === String(rest.id) &&
-         i.ItemName === itemName
-  );
+  const it = items.find(i => i.ItemName === itemName);
+  if(!it) return 0;
 
-  return it ? Number(it.Price) : 0;
+  let base = Number(it.Price);
+
+  const variantPrice = selectedVariants[it.id] || 0;
+  const addonPrice = (selectedAddons[it.id] || []).reduce((a,b)=>a+b,0);
+
+  return base + variantPrice + addonPrice;
 }
-
+  
 function updateBar(){
   let itemCount = 0, total = 0;
 
@@ -1369,6 +1430,8 @@ window.openSummary = openSummary;
 window.goToAddress = goToAddress;
 window.captureLocation = captureLocation;
 window.placeOrder = placeOrder;
+  window.selectVariant = selectVariant;
+window.toggleAddon = toggleAddon;
   
   });
 </script>
