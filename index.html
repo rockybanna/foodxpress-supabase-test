@@ -6,8 +6,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="e53935">
-
+<meta name="theme-color" content="#e53935">
+  
+  <link rel="icon" href="company-logo.png">
+  <link rel="apple-touch-icon" href="company-logo.png">
 
 <style>
   :root{
@@ -975,32 +977,32 @@ const itemAddons = addons.filter(a =>
   String(a.item_id || a.ItemID || a.itemId) === String(it.id)
 );
     const basePrice = it.Price;
-    // ✅ set default variant automatically
+// ✅ auto-select first variant
 if(itemVariants.length && !selectedVariants[it.id]){
   selectedVariants[it.id] = itemVariants[0].price;
 }
-
     menuItems.innerHTML += `
       <div class="item">
         <div>
           <div class="item-name">${it.ItemName}</div>
           ${it.ItemDescription ? `<div class="item-desc">${it.ItemDescription}</div>` : ""}
 
-          <div class="small">₹${basePrice}</div>
-
+<div class="small">
+₹${selectedVariants[it.id] ? selectedVariants[it.id] : basePrice}
+</div>
           ${itemVariants.length ? `
             <div>
               <b>Choose Size:</b><br>
-              ${itemVariants.map(v => `
+${itemVariants.map((v, index) => `
 <label>
 <input type="radio" 
 name="var-${it.id}" 
-${itemVariants[0]?.id === v.id ? "checked" : ""}
-onchange="selectVariant(${JSON.stringify(it.id)}, ${v.price})">
-${v.name} (+₹${v.price})
+${index === 0 ? "checked" : ""}
+onchange="selectVariant('${it.id}', ${v.price})">
+${v.name} (₹${v.price})
 </label><br>
 `).join("")}
-            </div>
+</div>
           ` : ""}
 
           ${itemAddons.length ? `
@@ -1009,7 +1011,7 @@ ${v.name} (+₹${v.price})
               ${itemAddons.map(a => `
                 <label>
 <input type="checkbox"
-onchange="toggleAddon(${JSON.stringify(it.id)}, ${a.price}, this.checked)">
+onchange="toggleAddon('${it.id}', ${a.price}, this.checked)">
 ${a.name} (+₹${a.price})
 </label><br>
               `).join("")}
@@ -1055,11 +1057,14 @@ if(!it) return 0;
 
 let base = Number(it.Price);
 
-// 🔥 FIX: use itemName → id mapping
-const variantPrice = selectedVariants[it.id] || 0;
+// ✅ Variant replaces base
+if(selectedVariants[it.id]){
+  base = selectedVariants[it.id];
+}
+
 const addonPrice = (selectedAddons[it.id] || []).reduce((a,b)=>a+b,0);
 
-return base + variantPrice + addonPrice;
+return base + addonPrice;
 }
   
 function updateBar(){
@@ -1094,12 +1099,22 @@ function renderSummary(){
     const p = price(i);
     total += cart[i] * p;
 
-    summaryItems.innerHTML += `
-      <div class="cart-item">
-        <div>
-          ${i}
-          <div class="small">₹${p}</div>
-        </div>
+const it = items.find(x => x.ItemName === i);
+
+const variantObj = variants.find(v =>
+  String(v.item_id) === String(it.id) &&
+  Number(v.price) === Number(selectedVariants[it.id])
+);
+
+const variantText = variantObj
+  ? `(${variantObj.name} ₹${variantObj.price})`
+  : "";
+summaryItems.innerHTML += `
+  <div class="cart-item">
+    <div>
+      ${i} ${variantText}
+      <div class="small">₹${p}</div>
+      </div>
         <div class="qty">
           <button onclick="upd('${i}', ${p}, -1)">−</button>
           <span>${cart[i]}</span>
@@ -1382,10 +1397,21 @@ Restaurant: ${restName}
 Items:
 `;
 
-  for(const i in cart){
-    customerMsg += `• ${i} × ${cart[i]} — ₹${cart[i] * price(i)}\n`;
-  }
+for(const i in cart){
 
+  const it = items.find(x => x.ItemName === i);
+
+  const variantObj = variants.find(v =>
+    String(v.item_id) === String(it.id) &&
+    Number(v.price) === Number(selectedVariants[it.id])
+  );
+
+  const variantText = variantObj
+    ? ` (${variantObj.name})`
+    : "";
+
+  customerMsg += `• ${i}${variantText} × ${cart[i]} — ₹${cart[i] * price(i)}\n`;
+}
   customerMsg +=
 `
 ---------------------
