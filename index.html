@@ -989,9 +989,10 @@ const itemAddons = addons.filter(a =>
               <b>Choose Size:</b><br>
               ${itemVariants.map(v => `
                 <label>
-<input type="radio" name="var-${it.id}" 
+<input type="radio" 
+name="var-${it.id}" 
+${itemVariants[0]?.id === v.id ? "checked" : ""}
 onchange="selectVariant(${JSON.stringify(it.id)}, ${v.price})">
-${v.name} (+₹${v.price})
 </label><br>
               `).join("")}
             </div>
@@ -1045,14 +1046,15 @@ function upd(itemName, priceIgnored, delta){
 function price(itemName){
 
   const it = items.find(i => i.ItemName === itemName);
-  if(!it) return 0;
+if(!it) return 0;
 
-  let base = Number(it.Price);
+let base = Number(it.Price);
 
-  const variantPrice = selectedVariants[it.id] || 0;
-  const addonPrice = (selectedAddons[it.id] || []).reduce((a,b)=>a+b,0);
+// 🔥 FIX: use itemName → id mapping
+const variantPrice = selectedVariants[it.id] || 0;
+const addonPrice = (selectedAddons[it.id] || []).reduce((a,b)=>a+b,0);
 
-  return base + variantPrice + addonPrice;
+return base + variantPrice + addonPrice;
 }
   
 function updateBar(){
