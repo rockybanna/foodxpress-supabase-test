@@ -896,9 +896,6 @@ function renderRestaurants(){
 /* ================= MENU ================= */
 function openMenu(id){
   
-selectedVariants = {};
-selectedAddons = {};
-  
   cart = {};
   currentRestaurant = id;
 
@@ -960,10 +957,6 @@ const itemAddons = addons.filter(a =>
   String(a.item_id || a.ItemID || a.itemId) === String(it.id)
 );
     const basePrice = it.Price;
-// ✅ auto-select first variant
-if(itemVariants.length && !selectedVariants[it.id]){
-  selectedVariants[it.id] = itemVariants[0].price;
-}
 itemVariants.length ? 
 itemVariants.forEach(v => {
 
@@ -1435,8 +1428,6 @@ window.openSummary = openSummary;
 window.goToAddress = goToAddress;
 window.captureLocation = captureLocation;
 window.placeOrder = placeOrder;
-window.selectVariant = selectVariant;
-window.toggleAddon = toggleAddon;
 window.renderMenu = renderMenu;
   });
 </script>
