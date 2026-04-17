@@ -195,7 +195,7 @@ function render(){
   // categories
   document.getElementById("categories").innerHTML =
     categories.map(c=>`
-      <div class="cat">${c.CategoryName}</div>
+      <div class="cat">${c.name}</div>
     `).join("");
 
   // restaurants
@@ -203,7 +203,7 @@ function render(){
     restaurants.map(r=>`
       <div class="card" onclick="openMenu('${r.id}')">
         <img src="${r.Image || 'company-logo.png'}">
-        <div>${r.RestaurantName}</div>
+        <div>${r.name}</div>
       </div>
     `).join("");
 }
@@ -211,7 +211,7 @@ function render(){
 // OPEN MENU
 function openMenu(id){
   localStorage.setItem("restaurant", id);
-  window.location.href = "menu.html";
+  window.location.href = "index.html";
 }
 
 // SEARCH
@@ -220,11 +220,11 @@ function search(){
 
   document.getElementById("restaurants").innerHTML =
     restaurants
-      .filter(r => r.RestaurantName.toLowerCase().includes(q))
+      .filter(r => (r.name || "").toLowerCase().includes(q))
       .map(r=>`
         <div class="card" onclick="openMenu('${r.id}')">
           <img src="${r.Image || 'company-logo.png'}">
-          <div>${r.RestaurantName}</div>
+          <div>${r.name}</div>
         </div>
       `).join("");
 }
