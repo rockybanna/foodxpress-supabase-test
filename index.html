@@ -160,22 +160,22 @@ body { margin:0; font-family:sans-serif; background:#f5f5f5; }
 
 <!-- SECTION 2 -->
 
-<div class="section-title">🍽 Popular Restaurants</div>
-<button onclick="showAll('normal')">See All →</button>
-  
-<div style="padding:0 10px; text-align:right;">
-  <button>See All →</button>
+<div style="display:flex;justify-content:space-between;align-items:center;padding:0 10px;">
+  <div class="section-title">🍽 Popular Restaurants</div>
+  <button onclick="showAll('normal')">See All →</button>
 </div>
 
+<div class="restaurants" id="normal"></div>
+  
 
 <!-- SECTION 3 -->
 
-<div class="section-title">⏱ Currently Closed</div>
-<button onclick="showAll('closed')">See All →</button>
-  
-<div style="padding:0 10px; text-align:right;">
-  <button>See All →</button>
+<div style="display:flex;justify-content:space-between;align-items:center;padding:0 10px;">
+  <div class="section-title">⏱ Currently Closed</div>
+  <button onclick="showAll('closed')">See All →</button>
 </div>
+
+<div class="restaurants" id="closed"></div>
   
 <!-- BOTTOM NAV -->
 
@@ -292,7 +292,7 @@ function card(r){
       onclick="${r.is_open ? `openMenu('${r.id}')` : ''}"
       style="${!r.is_open ? 'opacity:0.5;' : ''}">
 
-      <img src="${r.image || 'company-logo.png'}">
+      <img src="${r.image || 'company-logo.png'}" loading="lazy">
 
       <div style="font-weight:600; margin-top:5px;">
         ${vegDot} ${r.name}
@@ -316,25 +316,24 @@ function card(r){
   
 render();
 
-  function showAll(type){
+function showAll(type){
 
   let list = [];
 
   if(type === "price"){
     list = restaurants.filter(r => r.price_match && r.is_open);
+    document.getElementById("priceMatch").innerHTML = list.map(card).join("");
   }
 
   if(type === "normal"){
     list = restaurants.filter(r => !r.price_match && r.is_open);
+    document.getElementById("normal").innerHTML = list.map(card).join("");
   }
 
   if(type === "closed"){
     list = restaurants.filter(r => !r.is_open);
+    document.getElementById("closed").innerHTML = list.map(card).join("");
   }
-
-  document.getElementById("priceMatch").innerHTML = "";
-  document.getElementById("normal").innerHTML = list.map(card).join("");
-  document.getElementById("closed").innerHTML = "";
 
 }
   
