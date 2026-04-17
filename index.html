@@ -555,23 +555,6 @@ let lat="",lng="",mapLink="";
 let pricedDistanceKm = 0;
 let orderId = "";
 let platformFee = 5;
-  let selectedVariants = {};
-let selectedAddons = {};
-
-function selectVariant(item, price){
-  selectedVariants[item] = price;
-}
-
-function toggleAddon(item, price, checked){
-
-  if(!selectedAddons[item]) selectedAddons[item] = [];
-
-  if(checked){
-    selectedAddons[item].push(price);
-  } else {
-    selectedAddons[item] = selectedAddons[item].filter(p => p !== price);
-  }
-}
 
 /* ================= DOM READY (PWA SAFE) ================= */
 let restaurantList, menuItems, catList, summaryItems,
@@ -981,66 +964,54 @@ const itemAddons = addons.filter(a =>
 if(itemVariants.length && !selectedVariants[it.id]){
   selectedVariants[it.id] = itemVariants[0].price;
 }
-    menuItems.innerHTML += `
-      <div class="item">
-        <div>
-          <div class="item-name">${it.ItemName}</div>
-          ${it.ItemDescription ? `<div class="item-desc">${it.ItemDescription}</div>` : ""}
+itemVariants.length ? 
+itemVariants.forEach(v => {
 
-<div class="small">
-₹${selectedVariants[it.id] ? selectedVariants[it.id] : basePrice}
-</div>
-          ${itemVariants.length ? `
-            <div>
-              <b>Choose Size:</b><br>
-${itemVariants.map((v, index) => `
-<label>
-<input type="radio" 
-name="var-${it.id}" 
-${index === 0 ? "checked" : ""}
-onchange="selectVariant('${it.id}', ${v.price}); renderMenu();">
-${v.name} (₹${v.price})
-</label><br>
-`).join("")}
-</div>
-          ` : ""}
+  const key = `${it.ItemName}__${v.name}`;
 
-          ${itemAddons.length ? `
-            <div>
-              <b>Add Extras:</b><br>
-              ${itemAddons.map(a => `
-                <label>
-<input type="checkbox"
-onchange="toggleAddon('${it.id}', ${a.price}, this.checked); renderMenu();">
-${a.name} (+₹${a.price})
-</label><br>
-              `).join("")}
-            </div>
-          ` : ""}
+  menuItems.innerHTML += `
+    <div class="item">
+      <div>
+        <div class="item-name">
+          ${it.ItemName} (${v.name})
         </div>
 
-        <div class="qty">
-<button onclick="upd('${it.ItemName}', '${it.id}', -1)">−</button>
-<span>
-${
-cart[
-`${it.ItemName}__${variants.find(v =>
-  String(v.item_id) === String(it.id) &&
-  Number(v.price) === Number(selectedVariants[it.id])
-)?.name || "Default"}`
-] || 0
-}
-</span>
-<button onclick="upd('${it.ItemName}', '${it.id}', 1)">+</button>
-</div>
+        <div class="small">₹${v.price}</div>
       </div>
-    `;
-  });
-  });
 
-  updateBar();
-  updateSavingHint();
-}
+      <div class="qty">
+        <button onclick="upd('${it.ItemName}', '${it.id}', '${v.name}', -1)">−</button>
+        <span>${cart[key] || 0}</span>
+        <button onclick="upd('${it.ItemName}', '${it.id}', '${v.name}', 1)">+</button>
+      </div>
+    </div>
+  `;
+}) :
+
+menuItems.innerHTML += `
+  <div class="item">
+    <div>
+      <div class="item-name">${it.ItemName}</div>
+      <div class="small">₹${it.Price}</div>
+    </div>
+
+    <div class="qty">
+      <button onclick="upd('${it.ItemName}', '${it.id}', 'Default', -1)">−</button>
+      <span>${cart[`${it.ItemName}__Default`] || 0}</span>
+      <button onclick="upd('${it.ItemName}', '${it.id}', 'Default', 1)">+</button>
+    </div>
+  </div>
+`;
+    updateBar();
+    updateSavingHint();
+
+  }); // ❗ closes items.forEach
+
+}); // ❗ closes restCats.forEach
+
+} // ❗ closes renderMenu function
+  
+           
 /* ================= CATEGORY ================= */
 function openCats(){catPopup.style.display="block"}
 function closeCats(){catPopup.style.display="none"}
@@ -1048,28 +1019,20 @@ function scrollCat(c){document.getElementById("cat-"+c)?.scrollIntoView({behavio
 
 /* ================= CART ================= */
 
-function upd(itemName, itemId, delta){
-
-  const variantPrice = selectedVariants[itemId] || 0;
-
-  const variantName = variants.find(v =>
-    String(v.item_id) === String(itemId) &&
-    Number(v.price) === Number(variantPrice)
-  )?.name || "Default";
+function upd(itemName, itemId, variantName, delta){
 
   const key = `${itemName}__${variantName}`;
 
   cart[key] = (cart[key] || 0) + delta;
 
-  if (cart[key] <= 0) delete cart[key];
+  if(cart[key] <= 0) delete cart[key];
 
   if (stack.at(-1) === "page-menu") renderMenu();
   if (stack.at(-1) === "page-summary") renderSummary();
 
   updateBar();
   updateSavingHint();
-}
-  
+}  
   
 function price(key){
 
@@ -1083,13 +1046,8 @@ function price(key){
     v.name === variantName
   );
 
-  let base = variantObj ? Number(variantObj.price) : Number(it.Price);
-
-  const addonPrice = (selectedAddons[it.id] || []).reduce((a,b)=>a+b,0);
-
-  return base + addonPrice;
+  return variantObj ? Number(variantObj.price) : Number(it.Price);
 }
-
   
 function updateBar(){
   let itemCount = 0, total = 0;
@@ -1136,10 +1094,10 @@ for (const i in cart){
         <div class="small">₹${p}</div>
       </div>
       <div class="qty">
-        <button onclick="upd('${itemName}', '${it.id}', -1)">−</button>
-        <span>${cart[i]}</span>
-        <button onclick="upd('${itemName}', '${it.id}', 1)">+</button>
-      </div>
+<button onclick="upd('${itemName}', '${it.id}', '${variantName}', -1)">−</button>
+<span>${cart[i]}</span>
+<button onclick="upd('${itemName}', '${it.id}', '${variantName}', 1)">+</button>
+</div>
     </div>
   `;
 }
