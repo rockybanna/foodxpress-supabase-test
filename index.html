@@ -322,19 +322,20 @@ function showAll(type){
 
   if(type === "price"){
     list = restaurants.filter(r => r.price_match && r.is_open);
-    document.getElementById("priceMatch").innerHTML = list.map(card).join("");
   }
 
   if(type === "normal"){
     list = restaurants.filter(r => !r.price_match && r.is_open);
-    document.getElementById("normal").innerHTML = list.map(card).join("");
   }
 
   if(type === "closed"){
     list = restaurants.filter(r => !r.is_open);
-    document.getElementById("closed").innerHTML = list.map(card).join("");
   }
 
+  document.getElementById("priceMatch").innerHTML = "";
+  document.getElementById("closed").innerHTML = "";
+  document.getElementById("normal").innerHTML =
+    list.map(card).join("");
 }
   
 
