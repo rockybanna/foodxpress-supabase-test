@@ -189,12 +189,72 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 // DATA
 let restaurants = [
-  {id:1, name:"Pizza Hub", image:"company-logo.png", price_match:true, is_open:true},
-  {id:2, name:"Burger King", image:"company-logo.png", price_match:true, is_open:true},
-  {id:3, name:"Cake World", image:"company-logo.png", price_match:false, is_open:true},
-  {id:4, name:"Biryani House", image:"company-logo.png", price_match:false, is_open:true},
-  {id:5, name:"Thali Center", image:"company-logo.png", price_match:false, is_open:false},
-  {id:6, name:"Snack Corner", image:"company-logo.png", price_match:false, is_open:false}
+  {
+    id:1,
+    name:"Pizza Hub",
+    image:"company-logo.png",
+    price_match:true,
+    is_open:true,
+    open_time:"10:00",
+    close_time:"23:00",
+    veg_type:"veg",
+    tag_line:"Best Pizza in town"
+  },
+  {
+    id:2,
+    name:"Burger King",
+    image:"company-logo.png",
+    price_match:true,
+    is_open:true,
+    open_time:"11:00",
+    close_time:"23:30",
+    veg_type:"nonveg",
+    tag_line:"Hot & juicy burgers"
+  },
+  {
+    id:3,
+    name:"Cake World",
+    image:"company-logo.png",
+    price_match:false,
+    is_open:true,
+    open_time:"09:00",
+    close_time:"22:00",
+    veg_type:"veg",
+    tag_line:"Fresh cakes daily"
+  },
+  {
+    id:4,
+    name:"Biryani House",
+    image:"company-logo.png",
+    price_match:false,
+    is_open:true,
+    open_time:"12:00",
+    close_time:"23:00",
+    veg_type:"nonveg",
+    tag_line:"Authentic biryani"
+  },
+  {
+    id:5,
+    name:"Thali Center",
+    image:"company-logo.png",
+    price_match:false,
+    is_open:false,
+    open_time:"10:00",
+    close_time:"21:00",
+    veg_type:"veg",
+    tag_line:"Unlimited thali"
+  },
+  {
+    id:6,
+    name:"Snack Corner",
+    image:"company-logo.png",
+    price_match:false,
+    is_open:false,
+    open_time:"10:00",
+    close_time:"22:00",
+    veg_type:"veg",
+    tag_line:"Quick snacks"
+  }
 ];
   
 // LOAD DATA
@@ -218,15 +278,34 @@ let closed = shuffle(restaurants.filter(r => !r.is_open));
 }
 
 function card(r){
+
+  const vegDot = r.veg_type === "veg"
+    ? `<span style="color:green;">●</span>`
+    : `<span style="color:red;">●</span>`;
+
   return `
-    <div class="card" 
+    <div class="card"
       onclick="${r.is_open ? `openMenu('${r.id}')` : ''}"
       style="${!r.is_open ? 'opacity:0.5;' : ''}">
 
-      <img src="${r.image}">
-      <div>${r.name}</div>
+      <img src="${r.image || 'company-logo.png'}">
 
-      ${!r.is_open ? `<div style="color:red; font-size:12px;">Closed</div>` : ''}
+      <div style="font-weight:600; margin-top:5px;">
+        ${vegDot} ${r.name}
+      </div>
+
+      <div style="font-size:12px; color:#666;">
+        ${r.tag_line || ""}
+      </div>
+
+      <div style="font-size:12px; margin-top:4px;">
+        ${
+          r.is_open
+          ? `<span style="color:green;">Open</span> • ${r.open_time} - ${r.close_time}`
+          : `<span style="color:red;">Closed</span>`
+        }
+      </div>
+
     </div>
   `;
 }
