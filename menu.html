@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Menu</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body { margin:0; font-family:sans-serif; background:#f5f5f5; }
+
+/* HEADER */
+.header {
+  background:#000;
+  color:#fff;
+  padding:12px;
+  display:flex;
+  align-items:center;
+}
+.back {
+  margin-right:10px;
+  cursor:pointer;
+}
+.title {
+  color:#ff9800;
+  font-weight:bold;
+}
+
+/* RESTAURANT INFO */
+.res-box {
+  background:#fff;
+  padding:12px;
+  margin:10px;
+  border-radius:10px;
+}
+
+/* ITEM */
+.item {
+  background:#fff;
+  margin:10px;
+  padding:12px;
+  border-radius:10px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.add-btn {
+  background:#ff5722;
+  color:#fff;
+  border:none;
+  padding:6px 12px;
+  border-radius:6px;
+}
+</style>
+
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="back" onclick="goBack()">⬅</div>
+  <div class="title">MENU</div>
+</div>
+
+<!-- RESTAURANT -->
+<div class="res-box" id="res"></div>
+
+<!-- ITEMS -->
+<div id="items"></div>
+
+<script>
+
+// GET SELECTED RESTAURANT
+let selectedId = localStorage.getItem("restaurant");
+
+// SAME DUMMY DATA (for now)
+let restaurants = [
+  {id:1,name:"Pizza Hub"},
+  {id:2,name:"Burger King"},
+  {id:3,name:"Cake World"},
+  {id:4,name:"Biryani House"}
+];
+
+// DUMMY ITEMS
+let menuItems = [
+  {id:1,res_id:1,name:"Veg Pizza",price:120},
+  {id:2,res_id:1,name:"Cheese Pizza",price:150},
+
+  {id:3,res_id:2,name:"Burger",price:80},
+  {id:4,res_id:2,name:"Fries",price:60},
+
+  {id:5,res_id:4,name:"Chicken Biryani",price:200},
+  {id:6,res_id:4,name:"Egg Biryani",price:150}
+];
+
+// FIND RESTAURANT
+let res = restaurants.find(r => r.id == selectedId);
+
+// SHOW RESTAURANT
+document.getElementById("res").innerHTML =
+  `<b>${res ? res.name : "Restaurant"}</b>`;
+
+// FILTER ITEMS
+let list = menuItems.filter(i => i.res_id == selectedId);
+
+// RENDER ITEMS
+document.getElementById("items").innerHTML =
+  list.map(i => `
+    <div class="item">
+      <div>
+        <div>${i.name}</div>
+        <div>₹${i.price}</div>
+      </div>
+      <button class="add-btn" onclick="addToCart('${i.id}')">Add</button>
+    </div>
+  `).join("");
+
+// ADD TO CART
+function addToCart(id){
+  alert("Item added: " + id);
+}
+
+// BACK
+function goBack(){
+  window.location.href = "index.html";
+}
+
+</script>
+
+</body>
+</html>
