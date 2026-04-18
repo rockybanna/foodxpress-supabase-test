@@ -253,7 +253,10 @@ if(existing){
   
 cart.push({
   name: item.name,
-  price: total,
+  basePrice: item.price,
+  variant: selectedVariant,
+  addons: selectedAddons,
+  total: total,
   qty: 1,
   resId: resId,
   resName: "Restaurant" // later dynamic
