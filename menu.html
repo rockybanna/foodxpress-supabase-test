@@ -160,14 +160,15 @@ document.getElementById("items").innerHTML =
 let currentItem = null;
 let selectedVariant = 0;
 let selectedAddons = [];
-  let cart = [];
-
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+  
 // OPEN POPUP
 function openPopup(id){
 
   currentItem = id;
   selectedVariant = 0;
   selectedAddons = [];
+  alert("Added ₹" + total);
 
   let item = items.find(i => i.id == id);
 
@@ -224,6 +225,7 @@ function addToCart(){
     name: item.name,
     total: total
   });
+  localStorage.setItem("cart", JSON.stringify(cart));
 
   alert("Added ₹" + total);
 
