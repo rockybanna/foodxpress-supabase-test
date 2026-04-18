@@ -70,8 +70,8 @@ document.getElementById("cartItems").innerHTML =
 
 ${c.variant > 0 ? `+ Variant ₹${c.variant}<br>` : ""}
 
-${c.addons.length > 0 
-  ? c.addons.map(a => `+ Addon ₹${a}`).join("<br>") + "<br>" 
+${c.addons.length > 0
+  ? c.addons.map(a => `+ ${a.name} ₹${a.price}`).join("<br>") + "<br>"
   : ""}
 
 <b>₹${c.total * c.qty}</b>
