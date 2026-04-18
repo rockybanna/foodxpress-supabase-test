@@ -86,9 +86,14 @@ body { margin:0; font-family:sans-serif; background:#f5f5f5; }
 
 <div class="header">
   <div class="back" onclick="goBack()">⬅</div>
-  <div class="title">MENU</div>
-</div>
 
+  <div class="title">MENU</div>
+
+  <div style="margin-left:auto; cursor:pointer;" onclick="openCart()">
+    🛒 <span id="cartCount">0</span>
+  </div>
+</div>
+  
 <div id="items"></div>
 
 <!-- POPUP -->
@@ -162,6 +167,8 @@ let selectedVariant = 0;
 let selectedAddons = [];
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
   
+  updateCartCount();
+  
 // OPEN POPUP
 function openPopup(id){
 
@@ -216,8 +223,18 @@ function toggleAddon(price,checked){
 // ADD TO CART
 function addToCart(){
   if(cart.length > 0 && cart[0].resId != resId){
-  alert("You can order from one restaurant at a time");
-  return;
+
+  let confirmClear = confirm(
+    "Cart has items from another restaurant.\n\nOK = Clear cart & add new\nCancel = Go to cart"
+  );
+
+  if(confirmClear){
+    cart = [];
+    localStorage.setItem("cart", JSON.stringify(cart));
+  } else {
+    window.location.href = "cart.html";
+    return;
+  }
 }
   let item = items.find(i => i.id == currentItem);
   let addonTotal = selectedAddons.reduce((a,b)=>a+b,0);
@@ -230,6 +247,8 @@ cart.push({
   resId: resId
 });
   localStorage.setItem("cart", JSON.stringify(cart));
+
+  updateCartCount();
 
   alert("Added ₹" + total);
 
@@ -255,6 +274,15 @@ function goBack(){
   let total = base + selectedVariant + addonTotal;
 
   document.getElementById("total").innerText = "Total: ₹" + total;
+}
+  
+  function updateCartCount(){
+  document.getElementById("cartCount").innerText = cart.length;
+}
+  
+  
+  function openCart(){
+  window.location.href = "cart.html";
 }
   
 </script>
