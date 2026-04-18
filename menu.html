@@ -215,15 +215,20 @@ function toggleAddon(price,checked){
 
 // ADD TO CART
 function addToCart(){
+  if(cart.length > 0 && cart[0].resId != resId){
+  alert("You can order from one restaurant at a time");
+  return;
+}
   let item = items.find(i => i.id == currentItem);
   let addonTotal = selectedAddons.reduce((a,b)=>a+b,0);
 
   let total = item.price + selectedVariant + addonTotal;
 
-  cart.push({
-    name: item.name,
-    total: total
-  });
+cart.push({
+  name: item.name,
+  total: total,
+  resId: resId
+});
   localStorage.setItem("cart", JSON.stringify(cart));
 
   alert("Added ₹" + total);
