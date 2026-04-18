@@ -61,7 +61,7 @@ document.getElementById("cartItems").innerHTML =
   cart.length === 0
     ? "Cart is empty"
     : cart.map((c, i) => {
-        total += c.price * c.qty;
+        total += c.total * c.qty;
         return `
         <div class="item">
           <div style="display:flex;justify-content:space-between;align-items:center;">
