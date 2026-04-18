@@ -250,12 +250,14 @@ let existing = cart.find(c =>
 if(existing){
   existing.qty += 1;
 } else {
-  cart.push({
-    name: item.name,
-    price: total,
-    qty: 1,
-    resId: resId
-  });
+  
+cart.push({
+  name: item.name,
+  price: total,
+  qty: 1,
+  resId: resId,
+  resName: "Restaurant" // later dynamic
+});
 }
   
   localStorage.setItem("cart", JSON.stringify(cart));
