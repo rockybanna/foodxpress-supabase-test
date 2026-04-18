@@ -241,11 +241,23 @@ function addToCart(){
 
   let total = item.price + selectedVariant + addonTotal;
 
-cart.push({
-  name: item.name,
-  total: total,
-  resId: resId
-});
+let existing = cart.find(c =>
+  c.name === item.name &&
+  c.total === total &&
+  c.resId === resId
+);
+
+if(existing){
+  existing.qty += 1;
+} else {
+  cart.push({
+    name: item.name,
+    price: total,
+    qty: 1,
+    resId: resId
+  });
+}
+  
   localStorage.setItem("cart", JSON.stringify(cart));
 
   updateCartCount();
