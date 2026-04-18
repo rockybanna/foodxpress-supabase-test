@@ -168,8 +168,7 @@ function openPopup(id){
   currentItem = id;
   selectedVariant = 0;
   selectedAddons = [];
-  alert("Added ₹" + total);
-
+  
   let item = items.find(i => i.id == id);
 
   document.getElementById("pname").innerText = item.name;
