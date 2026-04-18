@@ -80,8 +80,9 @@ if(type === "closed"){
 // RENDER
 document.getElementById("list").innerHTML =
   list.map(r => `
-    <div class="card" onclick="openMenu('${r.id}')">
-      <img src="${r.image}">
+    <div class="card" onclick="${r.is_open ? `openMenu('${r.id}')` : ''}"
+     style="${!r.is_open ? 'opacity:0.5;' : ''}">
+     <img src="${r.image}">
       <div>${r.name}</div>
     </div>
   `).join("");
