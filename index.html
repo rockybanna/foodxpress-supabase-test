@@ -152,7 +152,7 @@ body { margin:0; font-family:sans-serif; background:#f5f5f5; }
 
 <div style="display:flex;justify-content:space-between;align-items:center;padding:0 10px;">
   <div class="section-title">🔥 Best Price Guaranteed</div>
-  <button onclick="showAll('price')">See All →</button>
+  <button onclick="openList('price')">See All →</button>
 </div>
 
 <div class="restaurants" id="priceMatch"></div>
@@ -162,7 +162,7 @@ body { margin:0; font-family:sans-serif; background:#f5f5f5; }
 
 <div style="display:flex;justify-content:space-between;align-items:center;padding:0 10px;">
   <div class="section-title">🍽 Popular Restaurants</div>
-  <button onclick="showAll('normal')">See All →</button>
+  <button onclick="openList('normal')">See All →</button>
 </div>
 
 <div class="restaurants" id="normal"></div>
@@ -172,10 +172,9 @@ body { margin:0; font-family:sans-serif; background:#f5f5f5; }
 
 <div style="display:flex;justify-content:space-between;align-items:center;padding:0 10px;">
   <div class="section-title">⏱ Currently Closed</div>
-  <button onclick="showAll('closed')">See All →</button>
+  <button onclick="openList('closed')">See All →</button>
 </div>
-
-<div class="restaurants" id="closed"></div>
+  
   
 <!-- BOTTOM NAV -->
 
@@ -313,31 +312,14 @@ function card(r){
     </div>
   `;
 }
+function openList(type){
+  localStorage.setItem("listType", type);
+  window.location.href = "list.html";
+}
+
   
 render();
 
-function showAll(type){
-
-  let list = [];
-
-  if(type === "price"){
-    list = restaurants.filter(r => r.price_match && r.is_open);
-  }
-
-  if(type === "normal"){
-    list = restaurants.filter(r => !r.price_match && r.is_open);
-  }
-
-  if(type === "closed"){
-    list = restaurants.filter(r => !r.is_open);
-  }
-
-  document.getElementById("priceMatch").innerHTML = "";
-  document.getElementById("closed").innerHTML = "";
-  document.getElementById("normal").innerHTML =
-    list.map(card).join("");
-}
-  
 
 // OPEN MENU
 function openMenu(id){
