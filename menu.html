@@ -160,6 +160,7 @@ document.getElementById("items").innerHTML =
 let currentItem = null;
 let selectedVariant = 0;
 let selectedAddons = [];
+  let cart = [];
 
 // OPEN POPUP
 function openPopup(id){
@@ -181,7 +182,7 @@ function openPopup(id){
     <div>
       +₹${x.price}
       <input type="radio" name="var"
-        onclick="selectedVariant=${x.price}; updateTotal()"
+        onclick="selectedVariant=${x.price}; updateTotal()">
     </div>
   </div>
 `).join("");
@@ -195,7 +196,7 @@ function openPopup(id){
     <div>
       +₹${x.price}
       <input type="checkbox"
-        onclick="toggleAddon(${x.price},this.checked); updateTotal()"
+        onclick="toggleAddon(${x.price},this.checked); updateTotal()">
     </div>
   </div>
 `).join("");
@@ -214,16 +215,23 @@ function toggleAddon(price,checked){
 
 // ADD TO CART
 function addToCart(){
-  let base = items.find(i => i.id == currentItem).price;
+  let item = items.find(i => i.id == currentItem);
   let addonTotal = selectedAddons.reduce((a,b)=>a+b,0);
 
-  let total = base + selectedVariant + addonTotal;
+  let total = item.price + selectedVariant + addonTotal;
+
+  cart.push({
+    name: item.name,
+    total: total
+  });
 
   alert("Added ₹" + total);
 
+  console.log(cart);
+
   closePopup();
 }
-
+  
 // CLOSE
 function closePopup(){
   document.getElementById("popup").style.display = "none";
