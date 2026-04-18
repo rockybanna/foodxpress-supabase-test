@@ -125,7 +125,7 @@ body { margin:0; font-family:sans-serif; background:#f5f5f5; }
 
 <div class="header">
   <div class="logo">20NAGAR XPRESS</div>
-  <div class="cart">🛒</div>
+  <div class="cart" onclick="openCart()">🛒</div>
 </div>
 
 <!-- LOCATION -->
@@ -267,6 +267,10 @@ render();
 function openMenu(id){
   localStorage.setItem("restaurant", id);
   window.location.href = "menu.html";
+}
+
+  function openCart(){
+  window.location.href = "cart.html";
 }
 
 // SEARCH
