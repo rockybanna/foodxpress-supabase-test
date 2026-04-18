@@ -58,36 +58,37 @@ let total = 0; // keep
 
 // reset safety
 total = 0;
-  
-if(cart.length > 0){
-  document.getElementById("resName").innerText =
-    cart[0].resName || "Restaurant";
-}
-  
+
+  document.getElementById("cartItems").innerHTML =
+  cart.length === 0
+    ? "Cart is empty"
+    : cart.map((c, i) => {
+        total += (c.total || 0) * (c.qty || 1);
+
 return `
 <div class="item">
 
-  <div style="font-weight:600;font-size:15px;">
+  <div style="font-weight:600;font-size:16px;">
     ${c.name}
   </div>
 
-  <div style="font-size:12px;color:#666;margin-top:4px;">
-    ${c.variant > 0 ? `+ Variant ₹${c.variant}<br>` : ""}
+  <div style="font-size:13px;color:#666;margin-top:4px;line-height:18px;">
+    ${c.variant && c.variant > 0 ? `• Variant ₹${c.variant}<br>` : ""}
     
-    ${c.addons.length > 0 
-      ? c.addons.map(a => `+ ${a.name} ₹${a.price}`).join("<br>") 
+    ${c.addons && c.addons.length > 0 
+      ? c.addons.map(a => `• ${a.name} ₹${a.price}`).join("<br>") 
       : ""}
   </div>
 
   <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
 
-    <div style="font-weight:bold;">
+    <div style="font-weight:bold;font-size:15px;">
       ₹${c.total * c.qty}
     </div>
 
-    <div>
+    <div style="display:flex;gap:6px;align-items:center;">
       <button onclick="dec(${i})">−</button>
-      ${c.qty}
+      <div>${c.qty}</div>
       <button onclick="inc(${i})">+</button>
       <button onclick="removeItem(${i})">❌</button>
     </div>
@@ -96,7 +97,14 @@ return `
 
 </div>
 `;
+    }).join("");
+
   
+if(cart.length > 0){
+  document.getElementById("resName").innerText =
+    cart[0].resName || "Restaurant";
+}
+    
 if(cart.length === 0){
   document.getElementById("cartTotal").innerText = "";
   document.getElementById("resName").innerText = "";
