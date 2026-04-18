@@ -40,20 +40,28 @@ body { font-family:sans-serif; margin:0; background:#f5f5f5; }
 </div>
 
 <div id="cartItems" class="cart"></div>
+  <div id="cartTotal" style="padding:10px;font-weight:bold;"></div>
 
 <script>
 
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
+let total = 0;
+
 document.getElementById("cartItems").innerHTML =
   cart.length === 0
     ? "Cart is empty"
-    : cart.map(c => `
+    : cart.map((c, i) => {
+        total += c.total;
+        return `
         <div class="item">
           ${c.name} • ₹${c.total}
         </div>
-      `).join("");
+        `;
+      }).join("");
 
+document.getElementById("cartTotal").innerText = "Total: ₹" + total;
+  
 function goBack(){
   window.history.back();
 }
