@@ -23,10 +23,11 @@ body { margin:0; font-family:sans-serif; background:#f5f5f5; }
 .item {
   background:#fff;
   margin:10px;
-  padding:12px;
-  border-radius:10px;
+  padding:14px;
+  border-radius:14px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.08);
 }
-
+  
 .row {
   display:flex;
   justify-content:space-between;
@@ -87,8 +88,8 @@ body { margin:0; font-family:sans-serif; background:#f5f5f5; }
 <div class="header">
   <div class="back" onclick="goBack()">⬅</div>
 
-  <div class="title">MENU</div>
-
+<div class="title" id="resTitle"></div>
+  
   <div style="margin-left:auto; cursor:pointer;" onclick="openCart()">
     🛒 <span id="cartCount">0</span>
   </div>
@@ -121,6 +122,16 @@ body { margin:0; font-family:sans-serif; background:#f5f5f5; }
 
 // SELECTED RESTAURANT
 let resId = localStorage.getItem("restaurant");
+  let restaurantNames = {
+  1: "Pizza Hub",
+  2: "Burger King",
+  3: "Cake World",
+  4: "Biryani House",
+  5: "Thali Center"
+};
+
+document.getElementById("resTitle").innerText =
+  restaurantNames[resId] || "MENU";
 
 // ITEMS
 let items = [
