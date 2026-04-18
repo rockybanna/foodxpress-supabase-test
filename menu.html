@@ -203,7 +203,7 @@ function openPopup(id){
     <div>
       +₹${x.price}
       <input type="checkbox"
-        onclick="toggleAddon(${x.price},this.checked); updateTotal()">
+        onclick="toggleAddon('${x.name}', ${x.price}, this.checked); updateTotal()">
     </div>
   </div>
 `).join("");
@@ -215,11 +215,14 @@ function openPopup(id){
 }
 
 // ADDON TOGGLE
-function toggleAddon(price,checked){
-  if(checked) selectedAddons.push(price);
-  else selectedAddons = selectedAddons.filter(p => p !== price);
+function toggleAddon(name, price, checked){
+  if(checked){
+    selectedAddons.push({name:name, price:price});
+  } else {
+    selectedAddons = selectedAddons.filter(a => a.name !== name);
+  }
 }
-
+  
 // ADD TO CART
 function addToCart(){
   if(cart.length > 0 && cart[0].resId != resId){
@@ -237,7 +240,7 @@ function addToCart(){
   }
 }
   let item = items.find(i => i.id == currentItem);
-  let addonTotal = selectedAddons.reduce((a,b)=>a+b,0);
+  let addonTotal = selectedAddons.reduce((a,b)=>a + b.price, 0);
 
   let total = item.price + selectedVariant + addonTotal;
 
@@ -286,7 +289,7 @@ function goBack(){
 
   function updateTotal(){
   let base = items.find(i => i.id == currentItem).price;
-  let addonTotal = selectedAddons.reduce((a,b)=>a+b,0);
+  let addonTotal = selectedAddons.reduce((a,b)=>a + b.price, 0);
 
   let total = base + selectedVariant + addonTotal;
 
