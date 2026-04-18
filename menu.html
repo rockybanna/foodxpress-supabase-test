@@ -37,10 +37,13 @@ body { margin:0; font-family:sans-serif; background:#f5f5f5; }
   background:#ff5722;
   color:#fff;
   border:none;
-  padding:6px 12px;
-  border-radius:6px;
+  padding:10px;
+  border-radius:8px;
+  width:100%;
+  font-weight:bold;
+  margin-top:15px;
 }
-
+  
 /* POPUP */
 .popup {
   position:fixed;
@@ -48,17 +51,34 @@ body { margin:0; font-family:sans-serif; background:#f5f5f5; }
   left:0;
   right:0;
   background:#fff;
-  border-radius:12px 12px 0 0;
-  padding:15px;
+  border-radius:18px 18px 0 0;
+  padding:16px;
   display:none;
-  box-shadow:0 -3px 10px rgba(0,0,0,0.2);
+  box-shadow:0 -4px 20px rgba(0,0,0,0.2);
+  max-height:80vh;
+  overflow-y:auto;
 }
-.overlay {
-  position:fixed;
-  top:0; left:0; right:0; bottom:0;
-  background:rgba(0,0,0,0.5);
-  display:none;
+
+.popup h3 {
+  margin:0 0 10px 0;
 }
+
+.section {
+  margin-top:12px;
+}
+
+.option {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:8px 0;
+  border-bottom:1px solid #eee;
+}
+
+.option:last-child {
+  border-bottom:none;
+}
+
 </style>
 </head>
 
@@ -77,10 +97,19 @@ body { margin:0; font-family:sans-serif; background:#f5f5f5; }
 <div class="popup" id="popup">
   <h3 id="pname"></h3>
 
+<div class="section">
+  <b>Choose Size</b>
   <div id="variants"></div>
-  <div id="addons"></div>
+</div>
 
-  <button class="btn" onclick="addToCart()">Add to Cart</button>
+<div class="section">
+  <b>Add Extras</b>
+  <div id="addons"></div>
+</div>
+  
+  <div id="total" style="margin-top:10px;font-weight:bold;"></div>
+
+<button class="btn" onclick="addToCart()">Add to Cart</button>
 </div>
 
 <script>
@@ -147,22 +176,32 @@ function openPopup(id){
   let v = variants.filter(v => v.item == id);
   document.getElementById("variants").innerHTML =
     v.map(x => `
-      <label>
-        <input type="radio" name="var" onclick="selectedVariant=${x.price}">
-        ${x.name} (+₹${x.price})
-      </label><br>
-    `).join("");
-
+  <div class="option">
+    <div>${x.name}</div>
+    <div>
+      +₹${x.price}
+      <input type="radio" name="var"
+        onclick="selectedVariant=${x.price}; updateTotal()"
+    </div>
+  </div>
+`).join("");
+  
   // ADDONS
   let a = addons.filter(a => a.item == id);
   document.getElementById("addons").innerHTML =
     a.map(x => `
-      <label>
-        <input type="checkbox" onclick="toggleAddon(${x.price},this.checked)">
-        ${x.name} (+₹${x.price})
-      </label><br>
-    `).join("");
+  <div class="option">
+    <div>${x.name}</div>
+    <div>
+      +₹${x.price}
+      <input type="checkbox"
+        onclick="toggleAddon(${x.price},this.checked); updateTotal()"
+    </div>
+  </div>
+`).join("");
 
+  updateTotal();
+  
   document.getElementById("popup").style.display = "block";
   document.getElementById("overlay").style.display = "block";
 }
@@ -195,6 +234,15 @@ function goBack(){
   window.location.href = "index.html";
 }
 
+  function updateTotal(){
+  let base = items.find(i => i.id == currentItem).price;
+  let addonTotal = selectedAddons.reduce((a,b)=>a+b,0);
+
+  let total = base + selectedVariant + addonTotal;
+
+  document.getElementById("total").innerText = "Total: ₹" + total;
+}
+  
 </script>
 
 </body>
