@@ -67,7 +67,15 @@ document.getElementById("cartItems").innerHTML =
           <div style="display:flex;justify-content:space-between;align-items:center;">
   <div>
     ${c.name}<br>
-    ₹${c.price * c.qty}
+
+${c.variant > 0 ? `+ Variant ₹${c.variant}<br>` : ""}
+
+${c.addons.length > 0 
+  ? c.addons.map(a => `+ Addon ₹${a}`).join("<br>") + "<br>" 
+  : ""}
+
+<b>₹${c.total * c.qty}</b>
+
   </div>
 
   <div>
