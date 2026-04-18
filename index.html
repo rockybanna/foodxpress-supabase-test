@@ -194,74 +194,14 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 // DATA
 let restaurants = [
-  {
-    id:1,
-    name:"Pizza Hub",
-    image:"company-logo.png",
-    price_match:true,
-    is_open:true,
-    open_time:"10:00",
-    close_time:"23:00",
-    veg_type:"veg",
-    tag_line:"Best Pizza in town"
-  },
-  {
-    id:2,
-    name:"Burger King",
-    image:"company-logo.png",
-    price_match:true,
-    is_open:true,
-    open_time:"11:00",
-    close_time:"23:30",
-    veg_type:"nonveg",
-    tag_line:"Hot & juicy burgers"
-  },
-  {
-    id:3,
-    name:"Cake World",
-    image:"company-logo.png",
-    price_match:false,
-    is_open:true,
-    open_time:"09:00",
-    close_time:"22:00",
-    veg_type:"veg",
-    tag_line:"Fresh cakes daily"
-  },
-  {
-    id:4,
-    name:"Biryani House",
-    image:"company-logo.png",
-    price_match:false,
-    is_open:true,
-    open_time:"12:00",
-    close_time:"23:00",
-    veg_type:"nonveg",
-    tag_line:"Authentic biryani"
-  },
-  {
-    id:5,
-    name:"Thali Center",
-    image:"company-logo.png",
-    price_match:false,
-    is_open:false,
-    open_time:"10:00",
-    close_time:"21:00",
-    veg_type:"veg",
-    tag_line:"Unlimited thali"
-  },
-  {
-    id:6,
-    name:"Snack Corner",
-    image:"company-logo.png",
-    price_match:false,
-    is_open:false,
-    open_time:"10:00",
-    close_time:"22:00",
-    veg_type:"veg",
-    tag_line:"Quick snacks"
-  }
+  {id:1,name:"Pizza Hub",price_match:true,is_open:true,image:"company-logo.png"},
+  {id:2,name:"Burger King",price_match:true,is_open:true,image:"company-logo.png"},
+  {id:3,name:"Cake World",price_match:false,is_open:true,image:"company-logo.png"},
+  {id:4,name:"Biryani House",price_match:false,is_open:true,image:"company-logo.png"},
+  {id:5,name:"Thali Center",price_match:false,is_open:false,image:"company-logo.png"},
+  {id:6,name:"Snack Corner",price_match:false,is_open:false,image:"company-logo.png"} // ✅ ADD THIS
 ];
-  
+
 // LOAD DATA
 function render(){
 function shuffle(arr){
