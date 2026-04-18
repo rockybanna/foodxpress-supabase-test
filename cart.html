@@ -52,10 +52,10 @@ document.getElementById("cartItems").innerHTML =
   cart.length === 0
     ? "Cart is empty"
     : cart.map((c, i) => {
-        total += c.total;
+        total += c.price * c.qty;
         return `
         <div class="item">
-          ${c.name} • ₹${c.total}
+          ${c.name} x${c.qty} • ₹${c.price * c.qty}
         </div>
         `;
       }).join("");
