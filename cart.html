@@ -119,13 +119,36 @@ let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
 let total = 0;
 
+  // GROUP ITEMS (merge same items)
+let grouped = [];
+
+cart.forEach(item => {
+  let key = item.name + item.variant + JSON.stringify(item.addons);
+
+  let existing = grouped.find(g => g.key === key);
+
+  if(existing){
+    existing.qty += item.qty;
+    existing.total += item.total;
+  } else {
+    grouped.push({
+      key: key,
+      name: item.name,
+      variant: item.variant,
+      addons: item.addons,
+      qty: item.qty,
+      total: item.total
+    });
+  }
+});
+  
 // RENDER
 document.getElementById("cartItems").innerHTML =
   cart.length === 0
     ? "<div style='padding:20px;text-align:center;'>Cart is empty</div>"
-    : cart.map((c, i) => {
+    : grouped.map((c, i) => {
 
-        total += (c.total || 0) * (c.qty || 1);
+        total += c.total * c.qty;
 
         return `
 <div class="item">
