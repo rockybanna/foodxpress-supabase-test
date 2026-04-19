@@ -61,19 +61,21 @@ body {
   
 /* POPUP */
 .popup {
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  background:#fff;
-  border-radius:18px 18px 0 0;
-  padding:16px;
-  display:none;
-  box-shadow:0 -4px 20px rgba(0,0,0,0.2);
-  max-height:80vh;
-  overflow-y:auto;
-}
+  position: fixed;
+  bottom: 70px;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: #fff;
+  border-radius: 18px 18px 0 0;
+  padding: 16px;
+  display: none;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
 
+  max-height: 65vh;
+  overflow-y: auto;
+}
+  
 .popup h3 {
   margin:0 0 10px 0;
 }
@@ -151,7 +153,7 @@ body {
   justify-content:space-between;
   padding:12px;
   font-weight:bold;
-  z-index:100;
+  z-index:1100;
 }
   
 </style>
