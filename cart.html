@@ -122,7 +122,7 @@ let total = 0;
 // RENDER
 document.getElementById("cartItems").innerHTML =
   cart.length === 0
-    ? "Cart is empty"
+    ? "<div style='padding:20px;text-align:center;'>Cart is empty</div>"
     : cart.map((c, i) => {
 
         total += (c.total || 0) * (c.qty || 1);
@@ -205,10 +205,6 @@ function save(){
 
   function checkout(){
   window.location.href = "checkout.html";
-}
-  
-  // next step: address + payment page
-  // window.location.href = "checkout.html";
 }
   
 </script>
