@@ -41,6 +41,21 @@ body { margin:0; font-family:sans-serif; background:#f5f5f5; }
   object-fit:cover;
   border-radius:12px;
 }
+
+  .fbtn {
+  padding:6px 12px;
+  border-radius:20px;
+  border:1px solid #ddd;
+  background:#fff;
+  cursor:pointer;
+}
+
+.fbtn.active {
+  background:#ff5722;
+  color:#fff;
+  border:none;
+}
+  
 </style>
 
 </head>
@@ -52,6 +67,12 @@ body { margin:0; font-family:sans-serif; background:#f5f5f5; }
   <div class="title" id="title">Restaurants</div>
 </div>
 
+  <div style="display:flex; gap:10px; padding:10px;">
+  <button id="f_all" onclick="setFilter('all')" class="fbtn">All</button>
+  <button id="f_veg" onclick="setFilter('veg')" class="fbtn">🟢 Veg</button>
+  <button id="f_nonveg" onclick="setFilter('nonveg')" class="fbtn">🔴 Non-Veg</button>
+</div>
+  
 <div class="grid" id="list"></div>
 
 <script>
@@ -68,6 +89,7 @@ const headers = {
   let type = localStorage.getItem("listType");
 
   let restaurants = [];
+  let currentFilter = "all";
 
 // LOAD DATA
 async function loadRestaurants(){
@@ -85,25 +107,35 @@ async function loadRestaurants(){
 // RENDER
 function renderList(){
 
-  let filtered = [];
-
-  if(type === "price"){
-    filtered = restaurants.filter(r => Number(r.commission) === 10 && r.is_active);
-    document.getElementById("title").innerText = "Best Price Guaranteed";
+function applyFilter(list){
+  if(currentFilter === "veg"){
+    return list.filter(r => r.food_type === "veg");
   }
-
-  else if(type === "normal"){
-    filtered = restaurants.filter(r => Number(r.commission) !== 10 && r.is_active);
-    document.getElementById("title").innerText = "Popular Restaurants";
+  if(currentFilter === "nonveg"){
+    return list.filter(r => r.food_type === "nonveg");
   }
+  return list;
+}
 
-  else if(type === "closed"){
-    filtered = restaurants.filter(r => !r.is_active);
-    document.getElementById("title").innerText = "Currently Closed";
-  }
+let filtered = [];
 
+if(type === "price"){
+  filtered = applyFilter(restaurants.filter(r => Number(r.commission) === 10 && r.is_active));
+  document.getElementById("title").innerText = "Best Price Guaranteed";
+}
+
+else if(type === "normal"){
+  filtered = applyFilter(restaurants.filter(r => Number(r.commission) !== 10 && r.is_active));
+  document.getElementById("title").innerText = "Popular Restaurants";
+}
+
+else if(type === "closed"){
+  filtered = restaurants.filter(r => !r.is_active);
+  document.getElementById("title").innerText = "Currently Closed";
+}
+  
 else {
-  filtered = restaurants.filter(r => r.is_active);
+  filtered = applyFilter(restaurants.filter(r => r.is_active));
 }
   
   document.getElementById("list").innerHTML =
@@ -113,7 +145,12 @@ else {
         <img src="${r.image || 'company-logo.png'}">
 
         <div style="font-weight:600; margin-top:6px;">
-          ${r.name}
+          ${r.food_type === "veg"
+  ? `<span style="color:green;">●</span>`
+  : r.food_type === "nonveg"
+  ? `<span style="color:red;">●</span>`
+  : `<span style="color:green;">●</span><span style="color:red;">●</span>`
+} ${r.name}
         </div>
 
         <div style="font-size:12px; color:${r.is_active ? 'green' : 'red'};">
@@ -124,6 +161,15 @@ else {
     `).join("");
 }
 
+  function setFilter(type){
+  currentFilter = type;
+
+  document.querySelectorAll(".fbtn").forEach(b => b.classList.remove("active"));
+  document.getElementById("f_" + type).classList.add("active");
+
+  renderList();
+}
+  
 // NAVIGATION
 function openMenu(id){
   localStorage.setItem("restaurant", id);
@@ -135,7 +181,8 @@ function goBack(){
 }
 
 // START
-loadRestaurants();
+  loadRestaurants();
+document.getElementById("f_all").classList.add("active");
 
 </script>
 
