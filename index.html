@@ -204,9 +204,9 @@ function shuffle(arr){
   return arr.sort(() => Math.random() - 0.5);
 }
 
-let priceMatch = shuffle(restaurants);
-let normal = shuffle(restaurants);
-let closed = [];
+let priceMatch = shuffle(restaurants.filter(r => r.commission == 10 && r.is_active));
+let normal = shuffle(restaurants.filter(r => r.commission != 10 && r.is_active));
+let closed = shuffle(restaurants.filter(r => !r.is_active));
   
   document.getElementById("priceMatch").innerHTML =
     priceMatch.slice(0,4).map(card).join("");
