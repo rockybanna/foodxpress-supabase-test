@@ -305,10 +305,11 @@ function addToCart(){
 
 let existing = cart.find(c =>
   c.name === item.name &&
-  c.total === total &&
+  c.variant === selectedVariant &&
+  JSON.stringify(c.addons) === JSON.stringify(selectedAddons) &&
   c.resId === resId
 );
-
+  
 if(existing){
   existing.qty += 1;
 } else {
