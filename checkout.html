@@ -138,34 +138,44 @@ async function placeOrder(){
     return;
   }
 
-  // 1️⃣ CREATE MAIN ORDER
+  // ✅ GET restaurant_id SAFELY
+  let restaurantId = cart[0]?.resId || null;
+
+  // 1️⃣ INSERT ORDER
   const { data: orderData, error: orderError } = await supabase
     .from("orders")
     .insert([{
+      restaurant_id: restaurantId,
       customer_name: name,
       customer_phone: phone,
       customer_address: address,
       item_total: total,
       delivery_charge: 0,
+      platform_fee: 0,
       grand_total: total,
       payment_method: "COD",
+      payment_status: "pending",
       order_status: "pending"
     }])
     .select();
 
   if(orderError){
     console.log(orderError);
-alert("Order failed ❌ " + orderError.message);
+    alert("Order failed ❌ " + orderError.message);
     return;
   }
 
   let orderId = orderData?.[0]?.id;
 
-  // 2️⃣ INSERT ITEMS
+  // 2️⃣ INSERT ITEMS (WITH ADDONS ✅)
   let itemsToInsert = cart.map(c => ({
     order_id: orderId,
     item_name: c.name,
-    variant_name: c.variant > 0 ? "Variant ₹" + c.variant : "",
+    variant_name:
+      (c.variant ? `Variant ₹${c.variant}` : "") +
+      (c.addons && c.addons.length > 0
+        ? " | " + c.addons.map(a => a.name).join(", ")
+        : ""),
     quantity: c.qty,
     price: c.total
   }));
