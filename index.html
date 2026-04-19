@@ -220,10 +220,13 @@ let closed = shuffle(restaurants.filter(r => !r.is_active));
 
 function card(r){
 
-  const vegDot = r.veg_type === "veg"
-    ? `<span style="color:green;">●</span>`
-    : `<span style="color:red;">●</span>`;
-
+const vegDot =
+  r.food_type === "veg"
+    ? `<span style="color:green;">Veg</span>`
+    : r.food_type === "nonveg"
+    ? `<span style="color:red;">Non-Veg</span>`
+    : `<span style="color:green;">Veg</span> / <span style="color:red;">Non-Veg</span>`;
+  
   return `
     <div class="card"
       onclick="openMenu('${r.id}')"
