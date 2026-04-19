@@ -80,6 +80,16 @@ body { margin:0; font-family:sans-serif; background:#f5f5f5; }
   border-bottom:none;
 }
 
+  .overlay {
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+  background:rgba(0,0,0,0.4);
+  display:none;
+}
+  
 </style>
 </head>
 
@@ -149,20 +159,14 @@ let categories = [];
 // SELECTED RESTAURANT
 let resId = localStorage.getItem("restaurant");
   let selectedCat = "All";
-  
-  let restaurantNames = {
-  1: "Pizza Hub",
-  2: "Burger King",
-  3: "Cake World",
-  4: "Biryani House",
-  5: "Thali Center"
-};
-
-document.getElementById("resTitle").innerText =
-  restaurantNames[resId] || "MENU";
-
 
   async function loadData(){
+
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/restaurants?id=eq.${resId}`, { headers });
+const resData = await r.json();
+
+document.getElementById("resTitle").innerText =
+  resData[0]?.name || "MENU";
 
   const [i, v, a, c] = await Promise.all([
     fetch(`${SUPABASE_URL}/rest/v1/items?restaurant_id=eq.${resId}`, { headers }),
@@ -206,10 +210,11 @@ let filtered = items.filter(i =>
       </div>
     `).join("");
 }
-  
-let cats = ["All", ...categories.map(c => c.name)];
-  
+    
 function renderCategories(){
+
+  let cats = ["All", ...categories.map(c => c.name)];
+
   document.getElementById("categories").innerHTML =
     cats.map(c => `
       <div onclick="selectCat('${c}')"
@@ -253,33 +258,45 @@ function openPopup(id){
   document.getElementById("pname").innerText = item.name;
 
   // VARIANTS
-  let v = variants.filter(v => String(v.item_id) === String(id));
-  document.getElementById("variants").innerHTML =
-    v.map(x => `
-  <div class="option">
-    <div>${x.name}</div>
-    <div>
-      +₹${x.price}
-      <input type="radio" name="var"
-        onclick="selectedVariant=${x.price}; updateTotal()">
-    </div>
-  </div>
-`).join("");
+let v = variants.filter(v => String(v.item_id) === String(id));
+
+document.getElementById("variants").innerHTML =
+  v.length
+    ? v.map(x => `
+      <div class="option">
+        <div>${x.name}</div>
+        <div>
+          +₹${x.price}
+          <input type="radio" name="var"
+            ${x.is_default ? "checked" : ""}
+            onclick="selectedVariant=${x.price}; updateTotal()">
+        </div>
+      </div>
+    `).join("")
+    : "<div>No size options</div>";
+
+// ✅ ADD THIS EXACTLY HERE
+let defaultVar = v.find(x => x.is_default) || v[0];
+if(defaultVar){
+  selectedVariant = defaultVar.price;
+}
   
   // ADDONS
   let a = addons.filter(a => String(a.item_id) === String(id));
-  document.getElementById("addons").innerHTML =
-    a.map(x => `
-  <div class="option">
-    <div>${x.name}</div>
-    <div>
-      +₹${x.price}
-      <input type="checkbox"
-        onclick="toggleAddon('${x.name}', ${x.price}, this.checked); updateTotal()">
-    </div>
-  </div>
-`).join("");
-
+document.getElementById("addons").innerHTML =
+  a.length
+    ? a.map(x => `
+      <div class="option">
+        <div>${x.name}</div>
+        <div>
+          +₹${x.price}
+          <input type="checkbox"
+            onclick="toggleAddon('${x.name}', ${x.price}, this.checked); updateTotal()">
+        </div>
+      </div>
+    `).join("")
+    : "<div>No extras</div>";
+  
   updateTotal();
   
   document.getElementById("popup").style.display = "block";
@@ -335,7 +352,7 @@ cart.push({
   total: total,
   qty: 1,
   resId: resId,
-  resName: restaurantNames[resId]  // later dynamic
+  resName: document.getElementById("resTitle").innerText
 });
 }
   
