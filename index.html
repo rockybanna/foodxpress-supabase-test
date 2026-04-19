@@ -218,7 +218,8 @@ const headers = {
   Authorization: `Bearer ${SUPABASE_KEY}`
 };
 
-let currentFilter = "all";  
+let currentFilter = "all";
+  let restaurants = [];
   
 // LOAD DATA
 function render(){
@@ -343,7 +344,9 @@ async function loadRestaurants(){
 
   render();
 }
+  
   loadRestaurants();
+document.getElementById("f_all").classList.add("active");
   
 </script>
 
