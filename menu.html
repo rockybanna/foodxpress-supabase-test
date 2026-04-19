@@ -52,9 +52,9 @@ body {
   background:#ff5722;
   color:#fff;
   border:none;
-  padding:10px;
+  padding:8px 16px;
   border-radius:8px;
-  width:100%;
+  width:auto;
   font-weight:bold;
   margin-top:15px;
 }
@@ -103,6 +103,56 @@ body {
   background:rgba(0,0,0,0.4);
   display:none;
 }
+
+.search-box input {
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #ddd;
+  box-sizing:border-box;
+  font-size:14px;
+}
+
+  .top-sticky {
+  position:sticky;
+  top:48px;
+  background:#f5f5f5;
+  z-index:90;
+}
+
+  .search-box {
+  padding:10px;
+}
+
+.search-box input {
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #ddd;
+  box-sizing:border-box;
+  font-size:14px;
+}
+  
+.categories {
+  display:flex;
+  gap:10px;
+  overflow-x:auto;
+  padding:10px;
+}
+  
+  .cart-bar {
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:#ff5722;
+  color:#fff;
+  display:flex;
+  justify-content:space-between;
+  padding:12px;
+  font-weight:bold;
+  z-index:100;
+}
   
 </style>
 </head>
@@ -121,18 +171,17 @@ body {
   </div>
 
 </div>
+<div class="top-sticky">
+
+  <div class="search-box">
+    <input id="search" placeholder="Search item..."
+      oninput="renderItems()">
+  </div>
+
+  <div id="categories" class="categories"></div>
+
+</div>
   
-<input id="search" placeholder="Search item..." 
-  style="width:95%;margin:10px;padding:10px;border-radius:8px;border:1px solid #ddd;"
-  oninput="renderItems()">
-
-<div id="categories" style="
-  display:flex;
-  gap:10px;
-  overflow-x:auto;
-  padding:10px;
-"></div>
-
 <div id="items"></div>
   
 <!-- POPUP -->
@@ -156,6 +205,11 @@ body {
 <button class="btn" onclick="addToCart()">Add to Cart</button>
 </div>
 
+  <div id="cartBar" class="cart-bar" onclick="openCart()">
+  <div id="cartBarText">0 items | ₹0</div>
+  <div>View Cart →</div>
+</div>
+  
 <script>
 
   
@@ -216,7 +270,7 @@ let filtered = items.filter(i =>
   
   document.getElementById("items").innerHTML =
     filtered.map(i => `
-      <div class="item">
+      <div class="item" id="cat-${categories.find(c => c.id === i.category_id)?.name}">
         <div class="row">
           <div>
             <div>${i.name}</div>
@@ -248,12 +302,20 @@ function renderCategories(){
     `).join("");
 }
   
-  function selectCat(c){
+function selectCat(c){
   selectedCat = c;
   renderCategories();
-  renderItems();
-}
 
+  if(c === "All"){
+    window.scrollTo({ top:0, behavior:"smooth" });
+    return;
+  }
+
+  let el = document.getElementById("cat-" + c);
+  if(el){
+    el.scrollIntoView({ behavior:"smooth" });
+  }
+}
   
 // CURRENT ITEM
 let currentItem = null;
@@ -403,18 +465,51 @@ function goBack(){
   document.getElementById("total").innerText = "Total: ₹" + total;
 }
   
-  function updateCartCount(){
+function updateCartCount(){
+
   document.getElementById("cartCount").innerText = cart.length;
-}
-  
+
+  let total = 0;
+
+  cart.forEach(c => {
+    total += (c.total || 0) * (c.qty || 1);
+  });
+
+  let bar = document.getElementById("cartBar");
+
+  if(cart.length === 0){
+    bar.style.display = "none";
+  } else {
+    bar.style.display = "flex";
+    document.getElementById("cartBarText").innerText =
+      cart.length + " items | ₹" + total;
+  }
+}  
   
   function openCart(){
   window.location.href = "cart.html";
 }
 
+  window.addEventListener("scroll", () => {
+
+  let sections = document.querySelectorAll(".item");
+  let current = "All";
+
+  sections.forEach(sec => {
+    let rect = sec.getBoundingClientRect();
+
+    if(rect.top < 150){
+      current = sec.id?.replace("cat-", "") || "All";
+    }
+  });
+
+  selectedCat = current;
+  renderCategories();
+});
+  
   loadData();
   
 </script>
-
+      
 </body>
 </html>
