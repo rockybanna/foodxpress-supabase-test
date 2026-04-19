@@ -115,6 +115,21 @@ body { margin:0; font-family:sans-serif; background:#f5f5f5; }
   justify-content:space-around;
   padding:10px 0;
 }
+
+  .fbtn {
+  padding:6px 12px;
+  border-radius:20px;
+  border:1px solid #ddd;
+  background:#fff;
+  cursor:pointer;
+}
+
+.fbtn.active {
+  background:#ff5722;
+  color:#fff;
+  border:none;
+}
+  
 </style>
 
 </head>
@@ -148,6 +163,13 @@ body { margin:0; font-family:sans-serif; background:#f5f5f5; }
   <button onclick="search()">Search</button>
 </div>
 
+<!-- ✅ VEG TOGGLE -->
+<div style="display:flex; gap:10px; padding:0 10px; margin-top:5px;">
+  <button id="f_all" onclick="setFilter('all')" class="fbtn">All</button>
+  <button id="f_veg" onclick="setFilter('veg')" class="fbtn">🟢 Veg</button>
+  <button id="f_nonveg" onclick="setFilter('nonveg')" class="fbtn">🔴 Non-Veg</button>
+</div>
+  
 <!-- SECTION 1 -->
 
 <div style="display:flex;justify-content:space-between;align-items:center;padding:0 10px;">
@@ -198,15 +220,35 @@ const headers = {
 
 let restaurants = [];
   
+let currentFilter = "all";
+  
 // LOAD DATA
 function render(){
 function shuffle(arr){
   return arr.sort(() => Math.random() - 0.5);
 }
 
-let priceMatch = shuffle(restaurants.filter(r => r.commission == 10 && r.is_active));
-let normal = shuffle(restaurants.filter(r => r.commission != 10 && r.is_active));
-let closed = shuffle(restaurants.filter(r => !r.is_active));
+function applyFilter(list){
+  if(currentFilter === "veg"){
+    return list.filter(r => r.food_type === "veg");
+  }
+  if(currentFilter === "nonveg"){
+    return list.filter(r => r.food_type === "nonveg");
+  }
+  return list;
+}
+
+let priceMatch = shuffle(
+  applyFilter(restaurants.filter(r => r.commission == 10 && r.is_active))
+);
+
+let normal = shuffle(
+  applyFilter(restaurants.filter(r => r.commission != 10 && r.is_active))
+);
+
+let closed = shuffle(
+  applyFilter(restaurants.filter(r => !r.is_active))
+);
   
   document.getElementById("priceMatch").innerHTML =
     priceMatch.slice(0,4).map(card).join("");
@@ -218,14 +260,24 @@ let closed = shuffle(restaurants.filter(r => !r.is_active));
     closed.slice(0,4).map(card).join("");
 }
 
+function setFilter(type){
+  currentFilter = type;
+
+  document.querySelectorAll(".fbtn").forEach(b => b.classList.remove("active"));
+
+  document.getElementById("f_" + type).classList.add("active");
+
+  render();
+}
+  
 function card(r){
 
 const vegDot =
   r.food_type === "veg"
-    ? `<span style="color:green;">Veg</span>`
+    ? `<span style="color:green;">●</span>`
     : r.food_type === "nonveg"
-    ? `<span style="color:red;">Non-Veg</span>`
-    : `<span style="color:green;">Veg</span> / <span style="color:red;">Non-Veg</span>`;
+    ? `<span style="color:red;">●</span>`
+    : `<span style="color:green;">●</span><span style="color:red;">●</span>`;
   
   return `
     <div class="card"
