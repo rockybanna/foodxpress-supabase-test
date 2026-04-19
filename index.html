@@ -255,10 +255,6 @@ function openList(type){
   window.location.href = "list.html";
 }
 
-  
-render();
-
-
 // OPEN MENU
 function openMenu(id){
   localStorage.setItem("restaurant", id);
@@ -283,17 +279,18 @@ function search(){
   document.getElementById("closed").innerHTML = "";
 }
 
-  async function loadRestaurants(){
+async function loadRestaurants(){
 
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/restaurants?is_active=eq.true`,
+    `${SUPABASE_URL}/rest/v1/restaurants`,
     { headers }
   );
 
   restaurants = await res.json();
 
-  loadRestaurants();
+  render();
 }
+  loadRestaurants();
   
 </script>
 
