@@ -86,20 +86,38 @@ let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
 let total = 0;
 
+// CALCULATE TOTAL
+cart.forEach(c => {
+  total += (c.total || 0) * (c.qty || 1);
+});
+
 // RENDER SUMMARY
 document.getElementById("summary").innerHTML =
-  cart.map(c => {
+  cart.map(c => `
+    <div style="margin-bottom:10px;">
 
-    total += (c.total || 0) * (c.qty || 1);
-
-    return `
-      <div class="item">
-        ${c.name} x${c.qty} - ₹${c.total * c.qty}
+      <div style="font-weight:600;">
+        ${c.name} x${c.qty}
       </div>
-    `;
-  }).join("") +
-  `<div class="total">Total: ₹${total}</div>`;
 
+      <div style="font-size:12px;color:#666;">
+        ${c.variant && c.variant > 0 ? `• Variant ₹${c.variant}<br>` : ""}
+        
+        ${c.addons && c.addons.length > 0 
+          ? c.addons.map(a => `• ${a.name} ₹${a.price}`).join("<br>") 
+          : ""}
+      </div>
+
+      <div style="font-weight:bold;margin-top:4px;">
+        ₹${(c.total || 0) * (c.qty || 1)}
+      </div>
+
+    </div>
+  `).join("") +
+
+  `<div style="font-weight:bold;margin-top:10px;">
+    Total: ₹${total}
+  </div>`;
 
 // PLACE ORDER
 function placeOrder(){
@@ -113,7 +131,6 @@ function placeOrder(){
     return;
   }
 
-  // MOCK ORDER
   let order = {
     name,
     phone,
@@ -132,6 +149,6 @@ function placeOrder(){
 }
 
 </script>
-
+  
 </body>
 </html>
