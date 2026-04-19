@@ -65,7 +65,9 @@ const headers = {
   Authorization: `Bearer ${SUPABASE_KEY}`
 };
 
-let restaurants = [];
+  let type = localStorage.getItem("listType");
+
+  let restaurants = [];
 
 // LOAD DATA
 async function loadRestaurants(){
@@ -83,8 +85,29 @@ async function loadRestaurants(){
 // RENDER
 function renderList(){
 
+  let filtered = [];
+
+  if(type === "price"){
+    filtered = restaurants.filter(r => Number(r.commission) === 10 && r.is_active);
+    document.getElementById("title").innerText = "Best Price Guaranteed";
+  }
+
+  else if(type === "normal"){
+    filtered = restaurants.filter(r => Number(r.commission) !== 10 && r.is_active);
+    document.getElementById("title").innerText = "Popular Restaurants";
+  }
+
+  else if(type === "closed"){
+    filtered = restaurants.filter(r => !r.is_active);
+    document.getElementById("title").innerText = "Currently Closed";
+  }
+
+else {
+  filtered = restaurants.filter(r => r.is_active);
+}
+  
   document.getElementById("list").innerHTML =
-    restaurants.map(r => `
+    filtered.map(r => `
       <div class="card" onclick="openMenu('${r.id}')">
 
         <img src="${r.image || 'company-logo.png'}">
