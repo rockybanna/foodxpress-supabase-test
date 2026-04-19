@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html>
 <head>
 <meta charset="UTF-8">
@@ -31,16 +32,6 @@ body { font-family:sans-serif; margin:0; background:#f5f5f5; }
   border:1px solid #ddd;
 }
 
-.item {
-  padding:6px 0;
-  border-bottom:1px solid #eee;
-}
-
-.total {
-  font-weight:bold;
-  margin-top:10px;
-}
-
 .btn {
   background:#ff5722;
   color:#fff;
@@ -52,6 +43,7 @@ body { font-family:sans-serif; margin:0; background:#f5f5f5; }
   margin-top:10px;
 }
 </style>
+
 </head>
 
 <body>
@@ -61,9 +53,11 @@ body { font-family:sans-serif; margin:0; background:#f5f5f5; }
 </div>
 
 <!-- CART SUMMARY -->
+
 <div class="section" id="summary"></div>
 
 <!-- CUSTOMER DETAILS -->
+
 <div class="section">
   <div>Name</div>
   <input id="name" class="input" placeholder="Enter name">
@@ -76,19 +70,20 @@ body { font-family:sans-serif; margin:0; background:#f5f5f5; }
 </div>
 
 <!-- BUTTON -->
+
 <div class="section">
   <button class="btn" onclick="placeOrder()">Place Order</button>
 </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
 
-  const supabase = window.supabase.createClient(
+const supabase = window.supabase.createClient(
   "https://zozzoqzryejpkbddzoyi.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvenpvcXpyeWVqcGtiZGR6b3lpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NDMwNzIsImV4cCI6MjA5MTUxOTA3Mn0.RYQqP5mVTtga4Y1XsBTRs_o58Bj2gSLZ5Se6YMak-UE"
 );
-  
+
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
 let total = 0;
@@ -138,80 +133,80 @@ async function placeOrder(){
     return;
   }
 
-  // ✅ GET restaurant_id SAFELY
   let restaurantId = cart[0]?.resId || null;
 
   if(!navigator.geolocation){
-  alert("Location not supported");
-  return;
-}
-
-navigator.geolocation.getCurrentPosition(async pos => {
-
-  const lat = pos.coords.latitude;
-  const lng = pos.coords.longitude;
-
-  // 👉 now insert order WITH location
-
-});
-  
-  // 1️⃣ INSERT ORDER
-  const { data: orderData, error: orderError } = await supabase
-    .from("orders")
-    .insert([{
-      restaurant_id: restaurantId,
-      customer_name: name,
-      customer_phone: phone,
-      customer_address: address,
-      item_total: total,
-      delivery_charge: 0,
-      platform_fee: 0,
-      grand_total: total,
-      payment_method: "COD",
-      payment_status: "pending",
-      order_status: "pending"
-    }])
-    .select();
-
-  if(orderError){
-    console.log(orderError);
-    alert("Order failed ❌ " + orderError.message);
+    alert("Location not supported");
     return;
   }
 
-  let orderId = orderData?.[0]?.id;
+  navigator.geolocation.getCurrentPosition(async pos => {
 
-  // 2️⃣ INSERT ITEMS (WITH ADDONS ✅)
-  let itemsToInsert = cart.map(c => ({
-    order_id: orderId,
-    item_name: c.name,
-    variant_name:
-      (c.variant ? `Variant ₹${c.variant}` : "") +
-      (c.addons && c.addons.length > 0
-        ? " | " + c.addons.map(a => a.name).join(", ")
-        : ""),
-    quantity: c.qty,
-    price: c.total
-  }));
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
 
-  const { error: itemError } = await supabase
-    .from("order_items")
-    .insert(itemsToInsert);
+    // 1️⃣ INSERT ORDER WITH LOCATION
+    const { data: orderData, error: orderError } = await supabase
+      .from("orders")
+      .insert([{
+        restaurant_id: restaurantId,
+        customer_name: name,
+        customer_phone: phone,
+        customer_address: address,
+        item_total: total,
+        delivery_charge: 0,
+        platform_fee: 0,
+        grand_total: total,
+        payment_method: "COD",
+        payment_status: "pending",
+        order_status: "pending",
+        lat: lat,
+        lng: lng
+      }])
+      .select();
 
-  if(itemError){
-    console.log(itemError);
-    alert("Items save failed ❌");
-    return;
-  }
+    if(orderError){
+      console.log(orderError);
+      alert("Order failed ❌ " + orderError.message);
+      return;
+    }
 
-  alert("Order Placed ✅");
+    let orderId = orderData?.[0]?.id;
 
-  localStorage.removeItem("cart");
+    // 2️⃣ INSERT ITEMS
+    let itemsToInsert = cart.map(c => ({
+      order_id: orderId,
+      item_name: c.name,
+      variant_name:
+        (c.variant ? `Variant ₹${c.variant}` : "") +
+        (c.addons && c.addons.length > 0
+          ? " | " + c.addons.map(a => a.name).join(", ")
+          : ""),
+      quantity: c.qty,
+      price: c.total
+    }));
 
-  window.location.href = "index.html";
+    const { error: itemError } = await supabase
+      .from("order_items")
+      .insert(itemsToInsert);
+
+    if(itemError){
+      console.log(itemError);
+      alert("Items save failed ❌");
+      return;
+    }
+
+    alert("Order Placed ✅");
+
+    localStorage.removeItem("cart");
+
+    window.location.href = "index.html";
+
+  });
+
 }
   
 </script>
-  
+
 </body>
 </html>
