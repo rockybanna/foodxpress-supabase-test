@@ -6,8 +6,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-body { margin:0; font-family:sans-serif; background:#f5f5f5; }
-
+body {
+  margin:0;
+  font-family:sans-serif;
+  background:#f5f5f5;
+  overflow-x:hidden;
+}
+  
 /* HEADER */
 .header {
   background:#000;
@@ -15,10 +20,19 @@ body { margin:0; font-family:sans-serif; background:#f5f5f5; }
   padding:12px;
   display:flex;
   align-items:center;
+  justify-content:space-between;
+  box-sizing:border-box;
+  width:100%;
 }
-.back { margin-right:10px; cursor:pointer; }
+  .back { margin-right:10px; cursor:pointer; }
 .title { color:#ff9800; font-weight:bold; }
 
+  .header {
+  position:sticky;
+  top:0;
+  z-index:100;
+}
+  
 /* ITEM */
 .item {
   background:#fff;
@@ -96,13 +110,16 @@ body { margin:0; font-family:sans-serif; background:#f5f5f5; }
 <body>
 
 <div class="header">
-  <div class="back" onclick="goBack()">⬅</div>
 
-<div class="title" id="resTitle"></div>
-  
-  <div style="margin-left:auto; cursor:pointer;" onclick="openCart()">
+  <div style="display:flex; align-items:center; gap:10px;">
+    <div class="back" onclick="goBack()">⬅</div>
+    <div class="title" id="resTitle"></div>
+  </div>
+
+  <div style="cursor:pointer;" onclick="openCart()">
     🛒 <span id="cartCount">0</span>
   </div>
+
 </div>
   
 <input id="search" placeholder="Search item..." 
