@@ -95,8 +95,19 @@ body { margin:0; font-family:sans-serif; background:#f5f5f5; }
   </div>
 </div>
   
-<div id="items"></div>
+<input id="search" placeholder="Search item..." 
+  style="width:95%;margin:10px;padding:10px;border-radius:8px;border:1px solid #ddd;"
+  oninput="renderItems()">
 
+<div id="categories" style="
+  display:flex;
+  gap:10px;
+  overflow-x:auto;
+  padding:10px;
+"></div>
+
+<div id="items"></div>
+  
 <!-- POPUP -->
 <div class="overlay" id="overlay" onclick="closePopup()"></div>
 
@@ -122,6 +133,8 @@ body { margin:0; font-family:sans-serif; background:#f5f5f5; }
 
 // SELECTED RESTAURANT
 let resId = localStorage.getItem("restaurant");
+  let selectedCat = "All";
+  
   let restaurantNames = {
   1: "Pizza Hub",
   2: "Burger King",
@@ -135,9 +148,9 @@ document.getElementById("resTitle").innerText =
 
 // ITEMS
 let items = [
-  {id:1,res:1,name:"Pizza",price:120},
-  {id:2,res:1,name:"Burger",price:80},
-  {id:3,res:4,name:"Biryani",price:200}
+{id:1,res:1,name:"Pizza",price:120,cat:"Pizza"},
+{id:2,res:1,name:"Burger",price:80,cat:"Burger"},
+{id:3,res:4,name:"Biryani",price:200,cat:"Biryani"},
 ];
 
 // VARIANTS
@@ -156,22 +169,57 @@ let addons = [
 ];
 
 // FILTER ITEMS
-let list = items.filter(i => i.res == resId);
 
-// RENDER ITEMS
-document.getElementById("items").innerHTML =
-  list.map(i => `
-    <div class="item">
-      <div class="row">
-        <div>
-          <div>${i.name}</div>
-          <div>₹${i.price}</div>
+function renderItems(){
+
+  let search = document.getElementById("search").value.toLowerCase();
+
+  let filtered = items.filter(i => 
+    i.res == resId &&
+    (selectedCat === "All" || i.cat === selectedCat) &&
+    i.name.toLowerCase().includes(search)
+  );
+
+  document.getElementById("items").innerHTML =
+    filtered.map(i => `
+      <div class="item">
+        <div class="row">
+          <div>
+            <div>${i.name}</div>
+            <div>₹${i.price}</div>
+          </div>
+          <button class="btn" onclick="openPopup(${i.id})">Add</button>
         </div>
-        <button class="btn" onclick="openPopup(${i.id})">Add</button>
       </div>
-    </div>
-  `).join("");
+    `).join("");
+}
+  
+let cats = ["All", ...new Set(items.filter(i => i.res == resId).map(i => i.cat))];
+  
+function renderCategories(){
+  document.getElementById("categories").innerHTML =
+    cats.map(c => `
+      <div onclick="selectCat('${c}')"
+        style="
+          padding:6px 12px;
+          border-radius:20px;
+          background:${selectedCat === c ? '#ff5722' : '#eee'};
+          color:${selectedCat === c ? '#fff' : '#000'};
+          cursor:pointer;
+          white-space:nowrap;
+        ">
+        ${c}
+      </div>
+    `).join("");
+}
+  
+  function selectCat(c){
+  selectedCat = c;
+  renderCategories();
+  renderItems();
+}
 
+  
 // CURRENT ITEM
 let currentItem = null;
 let selectedVariant = 0;
@@ -273,7 +321,7 @@ cart.push({
   total: total,
   qty: 1,
   resId: resId,
-  resName: "Restaurant" // later dynamic
+  resName: restaurantNames[resId]  // later dynamic
 });
 }
   
@@ -316,6 +364,9 @@ function goBack(){
   window.location.href = "cart.html";
 }
   
+renderCategories();
+renderItems();
+
 </script>
 
 </body>
