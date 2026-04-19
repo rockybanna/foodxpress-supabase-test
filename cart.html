@@ -202,25 +202,49 @@ function goBack(){
   window.history.back();
 }
 
-function inc(i){
-  cart[i].qty += 1;
+function updateItem(index, action){
+
+  let target = grouped[index];
+
+  cart = cart.map(item => {
+
+    let key = item.name + item.variant + JSON.stringify(item.addons);
+
+    if(key === target.key){
+
+      if(action === "inc") item.qty += 1;
+
+      if(action === "dec"){
+        item.qty -= 1;
+      }
+
+    }
+
+    return item;
+  }).filter(i => i.qty > 0);
+
   save();
+}
+
+function inc(i){
+  updateItem(i, "inc");
 }
 
 function dec(i){
-  if(cart[i].qty > 1){
-    cart[i].qty -= 1;
-  } else {
-    cart.splice(i,1);
-  }
-  save();
+  updateItem(i, "dec");
 }
 
 function removeItem(i){
-  cart.splice(i,1);
+  let target = grouped[i];
+
+  cart = cart.filter(item => {
+    let key = item.name + item.variant + JSON.stringify(item.addons);
+    return key !== target.key;
+  });
+
   save();
 }
-
+  
 function save(){
   localStorage.setItem("cart", JSON.stringify(cart));
   location.reload();
