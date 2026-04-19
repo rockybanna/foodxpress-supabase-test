@@ -131,6 +131,21 @@ body { margin:0; font-family:sans-serif; background:#f5f5f5; }
 
 <script>
 
+  
+  const SUPABASE_URL = "https://zozzoqzryejpkbddzoyi.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvenpvcXpyeWVqcGtiZGR6b3lpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NDMwNzIsImV4cCI6MjA5MTUxOTA3Mn0.RYQqP5mVTtga4Y1XsBTRs_o58Bj2gSLZ5Se6YMak-UE";
+
+const headers = {
+  apikey: SUPABASE_KEY,
+  Authorization: `Bearer ${SUPABASE_KEY}`
+};
+
+  let items = [];
+let variants = [];
+let addons = [];
+let categories = [];
+
+  
 // SELECTED RESTAURANT
 let resId = localStorage.getItem("restaurant");
   let selectedCat = "All";
@@ -146,40 +161,38 @@ let resId = localStorage.getItem("restaurant");
 document.getElementById("resTitle").innerText =
   restaurantNames[resId] || "MENU";
 
-// ITEMS
-let items = [
-{id:1,res:1,name:"Pizza",price:120,cat:"Pizza"},
-{id:2,res:1,name:"Burger",price:80,cat:"Burger"},
-{id:3,res:4,name:"Biryani",price:200,cat:"Biryani"},
-];
 
-// VARIANTS
-let variants = [
-  {item:1,name:"Regular",price:0},
-  {item:1,name:"Large",price:50},
+  async function loadData(){
 
-  {item:3,name:"Half",price:0},
-  {item:3,name:"Full",price:100}
-];
+  const [i, v, a, c] = await Promise.all([
+    fetch(`${SUPABASE_URL}/rest/v1/items?restaurant_id=eq.${resId}`, { headers }),
+    fetch(`${SUPABASE_URL}/rest/v1/variants`, { headers }),
+    fetch(`${SUPABASE_URL}/rest/v1/addons`, { headers }),
+    fetch(`${SUPABASE_URL}/rest/v1/categories?restaurant_id=eq.${resId}`, { headers })
+  ]);
 
-// ADDONS
-let addons = [
-  {item:1,name:"Cheese",price:30},
-  {item:1,name:"Extra Sauce",price:20}
-];
+  items = await i.json();
+  variants = await v.json();
+  addons = await a.json();
+  categories = await c.json();
 
+  renderCategories();
+  renderItems();
+}
+  
 // FILTER ITEMS
 
 function renderItems(){
 
   let search = document.getElementById("search").value.toLowerCase();
 
-  let filtered = items.filter(i => 
-    i.res == resId &&
-    (selectedCat === "All" || i.cat === selectedCat) &&
-    i.name.toLowerCase().includes(search)
-  );
-
+let filtered = items.filter(i => 
+  String(i.restaurant_id) === String(resId) &&
+  (selectedCat === "All" || 
+   categories.find(c => c.id === i.category_id)?.name === selectedCat) &&
+  i.name.toLowerCase().includes(search)
+);
+  
   document.getElementById("items").innerHTML =
     filtered.map(i => `
       <div class="item">
@@ -188,13 +201,13 @@ function renderItems(){
             <div>${i.name}</div>
             <div>₹${i.price}</div>
           </div>
-          <button class="btn" onclick="openPopup(${i.id})">Add</button>
+          <button class="btn" onclick="openPopup('${i.id}')">Add</button>
         </div>
       </div>
     `).join("");
 }
   
-let cats = ["All", ...new Set(items.filter(i => i.res == resId).map(i => i.cat))];
+let cats = ["All", ...categories.map(c => c.name)];
   
 function renderCategories(){
   document.getElementById("categories").innerHTML =
@@ -240,7 +253,7 @@ function openPopup(id){
   document.getElementById("pname").innerText = item.name;
 
   // VARIANTS
-  let v = variants.filter(v => v.item == id);
+  let v = variants.filter(v => String(v.item_id) === String(id));
   document.getElementById("variants").innerHTML =
     v.map(x => `
   <div class="option">
@@ -254,7 +267,7 @@ function openPopup(id){
 `).join("");
   
   // ADDONS
-  let a = addons.filter(a => a.item == id);
+  let a = addons.filter(a => String(a.item_id) === String(id));
   document.getElementById("addons").innerHTML =
     a.map(x => `
   <div class="option">
@@ -364,10 +377,9 @@ function goBack(){
   function openCart(){
   window.location.href = "cart.html";
 }
-  
-renderCategories();
-renderItems();
 
+  loadData();
+  
 </script>
 
 </body>
