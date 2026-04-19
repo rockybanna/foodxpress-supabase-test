@@ -191,26 +191,22 @@ body { margin:0; font-family:sans-serif; background:#f5f5f5; }
 // 🔥 SUPABASE CONFIG
   const SUPABASE_URL = "https://zozzoqzryejpkbddzoyi.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvenpvcXpyeWVqcGtiZGR6b3lpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NDMwNzIsImV4cCI6MjA5MTUxOTA3Mn0.RYQqP5mVTtga4Y1XsBTRs_o58Bj2gSLZ5Se6YMak-UE";
+const headers = {
+  apikey: SUPABASE_KEY,
+  Authorization: `Bearer ${SUPABASE_KEY}`
+};
 
-// DATA
-let restaurants = [
-  {id:1,name:"Pizza Hub",price_match:true,is_open:true,image:"company-logo.png"},
-  {id:2,name:"Burger King",price_match:true,is_open:true,image:"company-logo.png"},
-  {id:3,name:"Cake World",price_match:false,is_open:true,image:"company-logo.png"},
-  {id:4,name:"Biryani House",price_match:false,is_open:true,image:"company-logo.png"},
-  {id:5,name:"Thali Center",price_match:false,is_open:false,image:"company-logo.png"},
-  {id:6,name:"Snack Corner",price_match:false,is_open:false,image:"company-logo.png"}, // ✅ ADD THIS
-];
-
+let restaurants = [];
+  
 // LOAD DATA
 function render(){
 function shuffle(arr){
   return arr.sort(() => Math.random() - 0.5);
 }
 
-let priceMatch = shuffle(restaurants.filter(r => r.price_match && r.is_open));
-let normal = shuffle(restaurants.filter(r => !r.price_match && r.is_open));
-let closed = shuffle(restaurants.filter(r => !r.is_open));
+let priceMatch = shuffle(restaurants);
+let normal = shuffle(restaurants);
+let closed = [];
   
   document.getElementById("priceMatch").innerHTML =
     priceMatch.slice(0,4).map(card).join("");
@@ -230,8 +226,8 @@ function card(r){
 
   return `
     <div class="card"
-      onclick="${r.is_open ? `openMenu('${r.id}')` : 'return false'}"
-      style="${!r.is_open ? 'opacity:0.5;' : ''}">
+      onclick="openMenu('${r.id}')"
+      style="${!r.is_active ? 'opacity:0.5;' : ''}">
 
       <img src="${r.image || 'company-logo.png'}" loading="lazy">
 
@@ -245,7 +241,7 @@ function card(r){
 
       <div style="font-size:12px; margin-top:4px;">
         ${
-          r.is_open
+          r.is_active
           ? `<span style="color:green;">Open</span> • ${r.open_time} - ${r.close_time}`
           : `<span style="color:red;">Closed</span>`
         }
@@ -287,6 +283,18 @@ function search(){
   document.getElementById("closed").innerHTML = "";
 }
 
+  async function loadRestaurants(){
+
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/restaurants?is_active=eq.true`,
+    { headers }
+  );
+
+  restaurants = await res.json();
+
+  loadRestaurants();
+}
+  
 </script>
 
 </body>
