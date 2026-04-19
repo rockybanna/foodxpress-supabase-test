@@ -141,6 +141,20 @@ async function placeOrder(){
   // ✅ GET restaurant_id SAFELY
   let restaurantId = cart[0]?.resId || null;
 
+  if(!navigator.geolocation){
+  alert("Location not supported");
+  return;
+}
+
+navigator.geolocation.getCurrentPosition(async pos => {
+
+  const lat = pos.coords.latitude;
+  const lng = pos.coords.longitude;
+
+  // 👉 now insert order WITH location
+
+});
+  
   // 1️⃣ INSERT ORDER
   const { data: orderData, error: orderError } = await supabase
     .from("orders")
