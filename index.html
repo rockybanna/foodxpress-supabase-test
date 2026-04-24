@@ -107,12 +107,19 @@ body { margin:0; font-family:sans-serif; background:#f5f5f5; }
 .restaurants {
   display:flex;
   overflow-x:auto;
-  gap:10px;
+  scroll-snap-type:x mandatory;
   padding:10px;
+}
+  .page {
+  min-width:100%;
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);
+  gap:12px;
+  scroll-snap-align:start;
 }
   
 .card {
-  min-width:48%;
+  width:100%;
   background:#fff;
   border-radius:12px;
   padding:8px;
@@ -282,13 +289,13 @@ let closed = shuffle(
 );
   
 document.getElementById("priceMatch").innerHTML =
-  priceMatch.map(card).join("");
-  
+  buildPages(priceMatch);
+
 document.getElementById("normal").innerHTML =
-  normal.map(card).join("");
+  buildPages(normal);
 
 document.getElementById("closed").innerHTML =
-  closed.map(card).join("");
+  buildPages(closed);
 }
 
 function setFilter(type){
@@ -374,6 +381,22 @@ async function loadRestaurants(){
 
   restaurants = await res.json();
 
+  function buildPages(list){
+  let pages = [];
+
+  for(let i = 0; i < list.length; i += 6){
+    let chunk = list.slice(i, i + 6);
+
+    pages.push(`
+      <div class="page">
+        ${chunk.map(card).join("")}
+      </div>
+    `);
+  }
+
+  return pages.join("");
+}
+  
   render();
 }
   
