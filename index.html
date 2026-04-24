@@ -111,22 +111,12 @@ body { margin:0; font-family:sans-serif; background:#f5f5f5; }
   padding:10px;
 }
   
-.page {
-  min-width:100%;
-  display:grid;
-  grid-template-columns:repeat(2, 1fr);
-  gap:12px;
-  padding:10px;
-  scroll-snap-align:start;
-}
-  
 .card {
-  width:100%;
+  min-width:48%;
   background:#fff;
   border-radius:12px;
   padding:8px;
-  cursor:pointer;
-  box-shadow:0 2px 6px rgba(0,0,0,0.08);
+  box-sizing:border-box;
 }
   
   .card img {
@@ -262,24 +252,6 @@ const headers = {
 let currentFilter = "all";
   let restaurants = [];
 
-    function buildPages(list){
-
-  let pages = [];
-
-  for(let i = 0; i < list.length; i += 6){
-    let chunk = list.slice(i, i + 6);
-
-    let pageHTML = `
-      <div class="page">
-        ${chunk.map(card).join("")}
-      </div>
-    `;
-
-    pages.push(pageHTML);
-  }
-
-  return pages.join("");
-}
   
 // LOAD DATA
 function render(){
@@ -310,13 +282,13 @@ let closed = shuffle(
 );
   
 document.getElementById("priceMatch").innerHTML =
-  buildPages(priceMatch);
-
+  priceMatch.map(card).join("");
+  
 document.getElementById("normal").innerHTML =
-  buildPages(normal);
+  normal.map(card).join("");
 
 document.getElementById("closed").innerHTML =
-  buildPages(closed);
+  closed.map(card).join("");
 }
 
 function setFilter(type){
