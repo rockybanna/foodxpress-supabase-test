@@ -305,6 +305,22 @@ function setFilter(type){
 
   document.getElementById("f_" + type).classList.add("active");
 
+  function buildPages(list){
+  let pages = [];
+
+  for(let i = 0; i < list.length; i += 6){
+    let chunk = list.slice(i, i + 6);
+
+    pages.push(`
+      <div class="page">
+        ${chunk.map(card).join("")}
+      </div>
+    `);
+  }
+
+  return pages.join("");
+}
+
   render();
 }
   
@@ -381,22 +397,6 @@ async function loadRestaurants(){
 
   restaurants = await res.json();
 
-  function buildPages(list){
-  let pages = [];
-
-  for(let i = 0; i < list.length; i += 6){
-    let chunk = list.slice(i, i + 6);
-
-    pages.push(`
-      <div class="page">
-        ${chunk.map(card).join("")}
-      </div>
-    `);
-  }
-
-  return pages.join("");
-}
-  
   render();
 }
   
