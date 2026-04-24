@@ -83,11 +83,25 @@ body { margin:0; font-family:sans-serif; background:#f5f5f5; }
 .restaurants {
   display:flex;
   overflow-x:auto;
+  scroll-snap-type:x mandatory;
   padding:10px;
-  gap:10px;
-  scroll-behavior:smooth;
 }
 
+.page {
+  min-width:100%;
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);
+  grid-template-rows:repeat(3, auto);
+  gap:10px;
+  scroll-snap-align:start;
+  padding-right:10px;
+}
+
+.card {
+  width:100%;
+  padding:8px;
+}
+  
 .restaurants::-webkit-scrollbar {
   display:none;
 }
@@ -225,6 +239,25 @@ const headers = {
 
 let currentFilter = "all";
   let restaurants = [];
+
+    function buildPages(list){
+
+  let pages = [];
+
+  for(let i = 0; i < list.length; i += 6){
+    let chunk = list.slice(i, i + 6);
+
+    let pageHTML = `
+      <div class="page">
+        ${chunk.map(card).join("")}
+      </div>
+    `;
+
+    pages.push(pageHTML);
+  }
+
+  return pages.join("");
+}
   
 // LOAD DATA
 function render(){
@@ -254,14 +287,14 @@ let closed = shuffle(
   applyFilter(restaurants.filter(r => !r.is_active))
 );
   
-  document.getElementById("priceMatch").innerHTML =
-    priceMatch.slice(0,6).map(card).join("");
+document.getElementById("priceMatch").innerHTML =
+  buildPages(priceMatch);
 
-  document.getElementById("normal").innerHTML =
-    normal.slice(0,6).map(card).join("");
+document.getElementById("normal").innerHTML =
+  buildPages(normal);
 
-  document.getElementById("closed").innerHTML =
-    closed.slice(0,6).map(card).join("");
+document.getElementById("closed").innerHTML =
+  buildPages(closed);
 }
 
 function setFilter(type){
