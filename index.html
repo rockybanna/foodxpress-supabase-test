@@ -259,6 +259,21 @@ const headers = {
 let currentFilter = "all";
   let restaurants = [];
 
+  function buildPages(list){
+  let pages = [];
+
+  for(let i = 0; i < list.length; i += 6){
+    let chunk = list.slice(i, i + 6);
+
+    pages.push(`
+      <div class="page">
+        ${chunk.map(card).join("")}
+      </div>
+    `);
+  }
+
+  return pages.join("");
+}
   
 // LOAD DATA
 function render(){
@@ -304,22 +319,6 @@ function setFilter(type){
   document.querySelectorAll(".fbtn").forEach(b => b.classList.remove("active"));
 
   document.getElementById("f_" + type).classList.add("active");
-
-  function buildPages(list){
-  let pages = [];
-
-  for(let i = 0; i < list.length; i += 6){
-    let chunk = list.slice(i, i + 6);
-
-    pages.push(`
-      <div class="page">
-        ${chunk.map(card).join("")}
-      </div>
-    `);
-  }
-
-  return pages.join("");
-}
 
   render();
 }
